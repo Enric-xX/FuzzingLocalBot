@@ -1,15 +1,8 @@
-; ============================================================
-; Bot de Fuzzing v3.0
-; ============================================================
-
 #NoEnv
 #SingleInstance, Force
 SetWorkingDir %A_ScriptDir%
 SetBatchLines, -1
 
-; ============================================================
-; CONFIGURACIÓN GLOBAL
-; ============================================================
 global ExtensionesFile := A_ScriptDir . "\extensiones.txt"
 global Dominio := ""
 global Navegador := ""
@@ -17,23 +10,21 @@ global PythonScript := A_ScriptDir . "\fuzz_backend.py"
 global Directorios := []
 global Extensiones := []
 global RutasCompletas := []
+global Velocidad := "Rápida"
 
-; ============================================================
-; MENÚ PRINCIPAL
-; ============================================================
 FuzzBotMenu:
     Gui, FuzzBot:Destroy
-    Gui, FuzzBot:New, +AlwaysOnTop, Bot de Fuzzing
+    Gui, FuzzBot:New, +AlwaysOnTop, Fuzzing Bot
     Gui, FuzzBot:Color, 0x0d1117
     Gui, FuzzBot:Font, s10 cWhite, Segoe UI
 
-    Gui, FuzzBot:Add, Text, x10 y10 w380 h30 Center c00ff41, ⚡ Bot de Fuzzing ⚡
+    Gui, FuzzBot:Add, Text, x10 y10 w380 h30 Center c00ff41, ⚡ Fuzzing Bot ⚡
     
     Gui, FuzzBot:Add, Text, x10 y50 w120 h20 c8892b0, Navegador:
-    Gui, FuzzBot:Add, DropDownList, x130 y48 w250 vNavSel gGuardarNavegador, Chrome|Edge|Firefox|Brave|Opera
+    Gui, FuzzBot:Add, DropDownList, x130 y48 w250 vNavSel, Chrome|Edge|Firefox|Brave|Opera
 
     Gui, FuzzBot:Add, Text, x10 y80 w120 h20 c8892b0, Dominio:
-    Gui, FuzzBot:Add, Edit, x130 y78 w250 vDominioInput gGuardarDominio, https://ejemplo.com
+    Gui, FuzzBot:Add, Edit, x130 y78 w250 vDominioInput, https://ejemplo.com
 
     Gui, FuzzBot:Add, Text, x10 y110 w120 h20 c8892b0, Extensiones:
     Gui, FuzzBot:Add, Edit, x130 y108 w200 vExtFileReadOnly ReadOnly, %ExtensionesFile%
@@ -43,23 +34,12 @@ FuzzBotMenu:
 
     Gui, FuzzBot:Add, Button, x10 y170 w370 h40 gIniciarFuzzing, 🚀 INICIAR FUZZING
 
-    Gui, FuzzBot:Add, Text, x10 y220 w370 h30 Center cFF5555, ⚠️ NO TOQUES EL TECLADO MIENTRAS FUZZEA ⚠️
+    Gui, FuzzBot:Add, Text, x10 y220 w370 h30 Center cFF5555, ⚠️ NO TOQUES EL TECLADO ⚠️
 
     Gui, FuzzBot:Show, w390 h270
     Gosub, CargarExtensiones
 return
 
-GuardarNavegador:
-    GuiControlGet, NavSel
-return
-
-GuardarDominio:
-    GuiControlGet, DominioInput
-return
-
-; ============================================================
-; CARGAR EXTENSIONES
-; ============================================================
 CargarExtensiones:
     global ExtensionesFile, Directorios, Extensiones, RutasCompletas
     
@@ -68,27 +48,24 @@ CargarExtensiones:
     RutasCompletas := []
     
     if !FileExist(ExtensionesFile) {
-        GuiControl, FuzzBot:, EstadoExtensiones, Estado: Archivo no encontrado (se creará)
-        Gosub, CrearArchivoExtensiones
+        GuiControl, FuzzBot:, EstadoExtensiones, Estado: extensiones.txt no encontrado
         return
     }
     
-    estado := "Estado: Cargando..."
-    GuiControl, FuzzBot:, EstadoExtensiones, %estado%
+    GuiControl, FuzzBot:, EstadoExtensiones, Estado: Cargando 18.000 líneas...
     
-    totalLineas := 0
-    Loop, Read, %ExtensionesFile%
-        totalLineas++
-    
-    lineaIndex := 0
+    ; Leer todas las líneas del archivo
+    lineas := []
     Loop, Read, %ExtensionesFile%
     {
-        lineaIndex++
         linea := Trim(A_LoopReadLine)
-        
-        if (linea == "" || SubStr(linea, 1, 1) == "#")
-            continue
-            
+        if (linea != "" && SubStr(linea, 1, 1) != "#") {
+            lineas.Push(linea)
+        }
+    }
+    
+    ; Clasificar directorios y extensiones
+    for i, linea in lineas {
         if InStr(linea, ".") && !InStr(linea, "/") && !InStr(linea, "\") {
             if !InStr(linea, "*") {
                 Extensiones.Push(linea)
@@ -96,12 +73,9 @@ CargarExtensiones:
         } else {
             Directorios.Push(linea)
         }
-        
-        if Mod(lineaIndex, 10) == 0 {
-            GuiControl, FuzzBot:, EstadoExtensiones, Estado: Cargando %lineaIndex% de %totalLineas%...
-        }
     }
     
+    ; Generar combinaciones
     if Directorios.MaxIndex() > 0 && Extensiones.MaxIndex() > 0 {
         for i, dir in Directorios {
             for j, ext in Extensiones {
@@ -114,186 +88,12 @@ CargarExtensiones:
         RutasCompletas := Extensiones.Clone()
     }
     
-    estado := "Estado: " . Directorios.MaxIndex() . " directorios + " . Extensiones.MaxIndex() . " extensiones = " . RutasCompletas.MaxIndex() . " combinaciones"
+    estado := "Estado: " . Directorios.MaxIndex() . " directorios + " . Extensiones.MaxIndex() . " ext = " . RutasCompletas.MaxIndex() . " combinaciones"
     GuiControl, FuzzBot:, EstadoExtensiones, %estado%
-    
-    RegistrarAccion("Cargadas " . RutasCompletas.MaxIndex() . " rutas desde extensiones.txt")
 return
 
-; ============================================================
-; CREAR ARCHIVO DE EXTENSIONES
-; ============================================================
-CrearArchivoExtensiones:
-    global ExtensionesFile
-    
-    FileDelete, %ExtensionesFile%
-    FileAppend,
-    (LTrim
-        # Directorios y extensiones para fuzzing
-        # Las líneas con # son comentarios
-        # Las líneas vacías se ignoran
-        
-        # Directorios comunes
-        admin
-        login
-        wp-admin
-        wp-login.php
-        dashboard
-        cpanel
-        webmail
-        api
-        v1
-        v2
-        v3
-        docs
-        help
-        support
-        about
-        contact
-        shop
-        store
-        cart
-        checkout
-        account
-        profile
-        settings
-        config
-        backup
-        backups
-        tmp
-        temp
-        cache
-        logs
-        debug
-        tests
-        testing
-        stage
-        staging
-        dev
-        development
-        old
-        new
-        legacy
-        
-        # Archivos comunes
-        index.php
-        index.html
-        index.htm
-        default.php
-        default.html
-        home.php
-        home.html
-        main.php
-        main.html
-        wp-config.php
-        wp-config.php.bak
-        .env
-        .git
-        .gitignore
-        .htaccess
-        .htpasswd
-        robots.txt
-        sitemap.xml
-        phpinfo.php
-        info.php
-        test.php
-        test.html
-        shell.php
-        upload.php
-        dump.sql
-        backup.sql
-        database.sql
-        db.sql
-        backup.zip
-        
-        # Extensiones
-        .php
-        .html
-        .htm
-        .txt
-        .xml
-        .json
-        .yml
-        .yaml
-        .ini
-        .conf
-        .config
-        .bak
-        .backup
-        .old
-        .sql
-        .db
-        .log
-        .tmp
-        .css
-        .js
-        .zip
-        .tar
-        .gz
-        .rar
-        .7z
-        
-        # Directorios de CMS
-        wp-admin/
-        wp-includes/
-        wp-content/
-        wp-content/uploads/
-        wp-content/plugins/
-        wp-content/themes/
-        wp-content/languages/
-        wp-content/upgrade/
-        wp-content/backup-db/
-        wp-content/backup/
-        wp-content/cache/
-        
-        # Directorios de frameworks
-        vendor/
-        node_modules/
-        dist/
-        build/
-        src/
-        lib/
-        app/
-        public/
-        resources/
-        routes/
-        database/
-        migrations/
-        storage/
-        bootstrap/
-        config/
-        lang/
-        
-        # Otros
-        .aws/
-        .ssh/
-        .docker/
-        .vscode/
-        .github/
-        Dockerfile
-        docker-compose.yml
-        Makefile
-        composer.json
-        composer.lock
-        package.json
-        package-lock.json
-        yarn.lock
-        Gemfile
-        requirements.txt
-        Pipfile
-        setup.py
-        go.mod
-        go.sum
-    ), %ExtensionesFile%
-    
-    Gosub, CargarExtensiones
-return
-
-; ============================================================
-; SELECCIONAR ARCHIVO DE EXTENSIONES
-; ============================================================
 SeleccionarExtensiones:
-    FileSelectFile, archivo, 3, , Selecciona el archivo de extensiones, Text Documents (*.txt)
+    FileSelectFile, archivo, 3, , Selecciona extensiones, Text Documents (*.txt)
     if archivo {
         ExtensionesFile := archivo
         GuiControl, FuzzBot:, ExtFileReadOnly, %ExtensionesFile%
@@ -301,9 +101,6 @@ SeleccionarExtensiones:
     }
 return
 
-; ============================================================
-; INICIO DEL FUZZING
-; ============================================================
 IniciarFuzzing:
     Gui, FuzzBot:Submit, NoHide
 
@@ -318,7 +115,7 @@ IniciarFuzzing:
     }
 
     if RutasCompletas.MaxIndex() == 0 {
-        MsgBox, No hay rutas cargadas. Revisa el archivo extensiones.txt
+        MsgBox, No hay rutas cargadas.
         return
     }
 
@@ -338,111 +135,80 @@ IniciarFuzzing:
     }
 
     totalRutas := RutasCompletas.MaxIndex()
-    MsgBox, 4, , ⚠️ FUZZING AVANZADO⚠️`n`nObjetivo: %Dominio%`nRutas a probar: %totalRutas%`nNavegador: %NavSel%`n`n🚀 NO TOQUES EL TECLADO.`n`n¿Quieres continuar?
+    MsgBox, 4, , ⚠️ FUZZING ⚠️`n`nObjetivo: %Dominio%`nRutas: %totalRutas%`nNavegador: %NavSel%`n`n🚀 NO TOQUES EL TECLADO.
     IfMsgBox No
         return
 
-    RegistrarAccion("Iniciando fuzzing en " . Dominio . " con " . totalRutas . " rutas")
-    
     EjecutarFuzzing(Navegador, Dominio, RutasCompletas)
-
 return
 
-; ============================================================
-; EJECUCIÓN DEL FUZZING
-; ============================================================
 EjecutarFuzzing(navegador, dominio, rutas) {
     global
     
+    ; Abrir navegador
     Run, %navegador%
-    Sleep, 3000
+    Sleep, 2000
     
+    ; Nueva pestaña y cargar dominio
     Send, ^n
-    Sleep, 1500
-    
-    Send, ^l
     Sleep, 500
-    
-    Send, %dominio%
+    Send, ^l
     Sleep, 300
+    Send, %dominio%
+    Sleep, 200
     Send, {Enter}
-    Sleep, 3000
+    Sleep, 1500
     
     total := rutas.MaxIndex()
     contador := 0
     
     FormatTime, timestamp,, yyyy-MM-dd_HH-mm-ss
     resultadosFile := A_ScriptDir . "\fuzz_results_" . timestamp . ".txt"
-    FileAppend, Resultados de fuzzing en %dominio%`n`n, %resultadosFile%
+    FileAppend, Resultados fuzzing en %dominio%`n`n, %resultadosFile%
     
+    ; Iniciar Python backend (rápido, en paralelo)
     if FileExist(PythonScript) {
         Run, python "%PythonScript%" "%dominio%" "%ExtensionesFile%" "%resultadosFile%",, Hide
-        RegistrarAccion("Backend Python iniciado")
     }
+    
+    ; Velocidad máxima
+    SetKeyDelay, 0, 0
     
     for index, ruta in rutas {
         contador++
         
+        ; Abrir pestaña
         Send, ^n
-        Sleep, 1000
+        Sleep, 50
         
+        ; Enfocar barra
         Send, ^l
-        Sleep, 400
+        Sleep, 30
         
+        ; Construir URL
         if InStr(ruta, ".") {
             url := dominio . "/" . ruta
         } else {
             url := dominio . "/" . ruta . "/"
         }
         
-        for i, char in StrSplit(url) {
-            Send, %char%
-            Random, delay, 5, 15
-            Sleep, %delay%
-        }
-        Sleep, 200
-        
+        ; Escribir URL (muy rápido)
+        SendInput, %url%
+        Sleep, 50
         Send, {Enter}
-        Sleep, 2000
+        Sleep, 300
         
+        ; Cerrar pestaña
         Send, ^w
-        Sleep, 500
+        Sleep, 30
         
-        FileAppend, %contador%: %url%`n, %resultadosFile%
-        
-        if Mod(contador, 10) == 0 {
+        ; Guardar registro
+        if Mod(contador, 50) == 0 {
+            FileAppend, %contador%: %url%`n, %resultadosFile%
             porcentaje := Round(contador / total * 100)
-            TrayTip, Bot, Progreso: %porcentaje%% (%contador%/%total%), 2
+            TrayTip, Fuzzing, %porcentaje%% (%contador%/%total%), 1
         }
-        
-        Random, delay, 800, 2500
-        Sleep, %delay%
     }
     
-    RegistrarAccion("Fuzzing completado. " . total . " rutas probadas.")
-    MsgBox, ✅ FUZZING COMPLETADO!`n`nSe probaron %total% rutas en %dominio%.`n`nResultados guardados en:%resultadosFile%
+    MsgBox, ✅ COMPLETADO!`n`n%total% rutas probadas en %dominio%.`nResultados: %resultadosFile%
 }
-
-; ============================================================
-; REGISTRO DE ACCIONES
-; ============================================================
-RegistrarAccion(mensaje) {
-    FormatTime, ahora,, yyyy-MM-dd HH:mm:ss
-    FileAppend, %ahora% - %mensaje%`n, %A_ScriptDir%\bot.log
-}
-
-; ============================================================
-; ATALLO DE TECLADO
-; ============================================================
-^!F::  ; Ctrl+Alt+F para abrir el menú
-    Gosub, FuzzBotMenu
-return
-
-; ============================================================
-; CIERRE
-; ============================================================
-FuzzBotGuiClose:
-    ExitApp
-return
-
-Gosub, FuzzBotMenu
