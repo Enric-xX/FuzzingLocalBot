@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Fuzzing Bot</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+    <!-- ==========================================================
+    BARRA DE NAVEGACIÓN
+    ========================================================== -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-icon">⚡</span> Fuzzing Bot
+            </div>
+            <ul class="nav-links">
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#caracteristicas">Características</a></li>
+                <li><a href="#instalacion">Instalación</a></li>
+                <li><a href="#uso">Uso</a></li>
+                <li><a href="#legal">Legal</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- ==========================================================
+    HERO
+    ========================================================== -->
+    <section id="inicio" class="hero">
+        <div class="hero-content">
+            <h1>⚡ Fuzzing Bot</h1>
+            <p class="subtitle">
+                Automatización de fuzzing de directorios y extensiones<br/>
+                para pentesting autorizado.
+            </p>
+            <div class="hero-badges">
+                <span class="badge">v2.0</span>
+                <span class="badge badge-green">MIT License</span>
+                <span class="badge badge-yellow">Python 3.8+</span>
+            </div>
+            <div class="hero-buttons">
+                <a href="#" class="btn btn-primary">📥 Descargar ZIP</a>
+                <a href="#" class="btn btn-secondary">📂 Ver en GitHub</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================================
+    AVISO DE VPN
+    ========================================================== -->
+    <section class="vpn-alert-section">
+        <div class="vpn-alert">
+            <span class="vpn-icon">🔒</span>
+            <div>
+                <strong>RECOMENDACIÓN:</strong> Usa una <strong>VPN</strong> antes de ejecutar esta herramienta.
+                Solo para pentesting autorizado.
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================================
+    CARACTERÍSTICAS
+    ========================================================== -->
+    <section id="caracteristicas" class="section">
+        <div class="container">
+            <h2>⚡ Características</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📂</div>
+                    <h3>Carga automática</h3>
+                    <p>Lee <code>extensiones.txt</code> con miles de rutas y extensiones.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <h3>Simulación humana</h3>
+                    <p>Escribe rutas en el navegador imitando el comportamiento humano.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>Verificación en paralelo</h3>
+                    <p>Python backend con 50 threads para resultados rápidos.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Resultados</h3>
+                    <p>Salida en TXT y JSON con todos los hallazgos.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Interfaz gráfica</h3>
+                    <p>Selecciona navegador y dominio con un clic.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Aviso de VPN</h3>
+                    <p>Protege tu privacidad con un recordatorio en la terminal.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================================
+    ESTRUCTURA DEL PROYECTO
+    ========================================================== -->
+    <section id="estructura" class="section">
+        <div class="container">
+            <h2>📂 Estructura del proyecto</h2>
+            <div class="file-tree">
+                <div>📁 fuzzing_bot/</div>
+                <div style="padding-left:24px;">
+                    <div>📄 <span class="file-highlight">fuzzing_bot.ahk</span> ← Bot principal (500+ líneas)</div>
+                    <div>🐍 <span class="file-highlight">fuzz_backend.py</span> ← Backend en Python (500+ líneas)</div>
+                    <div>📄 <span class="file-highlight">extensiones.txt</span> ← Diccionario de 18k líneas</div>
+                    <div>📄 README.md</div>
+                    <div>📄 README.html</div>
+                    <div>📄 requirements.txt</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================================
+    INSTALACIÓN
+    ========================================================== -->
+    <section id="instalacion" class="section">
+        <div class="container">
+            <h2>🛠️ Instalación</h2>
+            <div class="code-block">
+                <code>
+                    # Clona o descarga el repositorio<br/>
+                    git clone https://github.com/tu-usuario/fuzzing-bot.git<br/>
+                    cd fuzzing-bot<br/><br/>
+                    # Instala las dependencias de Python<br/>
+                    pip install -r requirements.txt<br/><br/>
+                    # Ejecuta el bot (necesitas AutoHotkey instalado)<br/>
+                    fuzzing_bot.ahk
+                </code>
+            </div>
+            <p style="margin-top:10px;">
+                📌 <a href="https://www.autohotkey.com/" target="_blank">Descarga AutoHotkey aquí</a>
+            </p>
+        </div>
+    </section>
+
+    <!-- ==========================================================
+    USO
+    ========================================================== -->
+    <section id="uso" class="section">
+        <div class="container">
+            <h2>🚀 Uso</h2>
+            <ol>
+                <li><strong>Abre el bot</strong> → Ejecuta <code>fuzzing_bot.ahk</code>.</li>
+                <li><strong>Selecciona navegador</strong> en el menú desplegable.</li>
+                <li><strong>Introduce el dominio</strong> (ej: <code>https://ejemplo.com</code>).</li>
+                <li><strong>Presiona "INICIAR FUZZING"</strong>.</li>
+                <li><strong>No toques el teclado</strong> durante el proceso.</li>
+                <li>Los resultados se guardarán como <code>fuzz_results_[fecha].txt</code> y <code>.json</code>.</li>
+            </ol>
+        </div>
+    </section>
+
+    <!-- ==========================================================
+    AVISO LEGAL
+    ========================================================== -->
+    <section id="legal" class="section legal">
+        <div class="container">
+            <h2>⚠️ Aviso legal</h2>
+            <p style="color:#ff6b6b; font-weight:500;">
+                Esta herramienta está diseñada <strong>exclusivamente</strong> para fines educativos y
+                <strong>pentesting autorizado</strong>. No la uses contra sistemas sin el permiso
+                explícito de su propietario. El mal uso de esta herramienta puede ser ilegal.
+            </p>
+            <p style="color:#ff6b6b;">
+                <strong>El autor no se hace responsable del uso indebido de esta herramienta.</strong>
+            </p>
+        </div>
+    </section>
+
+    <!-- ==========================================================
+    FOOTER
+    ========================================================== -->
+    <footer class="footer">
+        <p>&copy; 2024 Fuzzing Bot &mdash; Código abierto bajo licencia MIT</p>
+        <p>
+            <a href="#inicio">Inicio</a> &middot;
+            <a href="#">Documentación</a> &middot;
+            <a href="#">Contacto</a>
+        </p>
+    </footer>
+
+</body>
+</html>
