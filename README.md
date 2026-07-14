@@ -36,7 +36,3 @@ Combina:
 - 🎨 **Interfaz gráfica** para seleccionar navegador y dominio.
 - 🔒 **Aviso de VPN** en la terminal para proteger tu privacidad.
 - 📊 **Progreso en tiempo real** durante la ejecución.
-
----
-
-## 📂 Estructura del proyecto
