@@ -3,7 +3,6 @@
 > Automatización de fuzzing de directorios y extensiones para pentesting autorizado.
 
 [![Status](https://img.shields.io/badge/status-active-brightgreen)](https://github.com/)
-[![License](https://img.shields.io/badge/license-MIT-blue)](https://github.com/)
 [![Python](https://img.shields.io/badge/python-3.8+-yellow)](https://python.org/)
 [![AutoHotkey](https://img.shields.io/badge/AutoHotkey-v2.0-orange)](https://www.autohotkey.com/)
 
