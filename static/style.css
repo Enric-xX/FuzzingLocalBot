@@ -1,0 +1,358 @@
+/* ============================================================
+   ESTILOS GENERALES
+============================================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #0d1117;
+    color: #e6edf3;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    scroll-behavior: smooth;
+}
+
+a {
+    color: #58a6ff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* ============================================================
+   BARRA DE NAVEGACIÓN
+============================================================ */
+.navbar {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 16px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.nav-logo {
+    font-size: 22px;
+    font-weight: 700;
+    color: #00ff41;
+}
+
+.logo-icon {
+    margin-right: 8px;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.nav-links a {
+    color: #8b949e;
+    font-weight: 500;
+    font-size: 15px;
+}
+
+.nav-links a:hover {
+    color: #00ff41;
+    text-decoration: none;
+}
+
+/* ============================================================
+   HERO
+============================================================ */
+.hero {
+    text-align: center;
+    padding: 70px 20px 50px;
+}
+
+.hero h1 {
+    font-size: 58px;
+    font-weight: 700;
+    color: #00ff41;
+    text-shadow: 0 0 30px rgba(0, 255, 65, 0.15);
+    letter-spacing: 2px;
+}
+
+.subtitle {
+    font-size: 20px;
+    color: #8b949e;
+    margin-top: 12px;
+}
+
+.hero-badges {
+    margin: 20px 0 28px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.badge {
+    background: #30363d;
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #e6edf3;
+}
+
+.badge-green {
+    background: #238636;
+    color: #fff;
+}
+
+.badge-yellow {
+    background: #d29922;
+    color: #0d1117;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-block;
+    padding: 14px 32px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    transition: 0.25s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: #00ff41;
+    color: #0d1117;
+}
+
+.btn-primary:hover {
+    background: #33ff70;
+    transform: scale(1.03);
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background: #30363d;
+    color: #e6edf3;
+}
+
+.btn-secondary:hover {
+    background: #3d444d;
+    transform: scale(1.03);
+    text-decoration: none;
+}
+
+/* ============================================================
+   VPN ALERT
+============================================================ */
+.vpn-alert-section {
+    padding: 0 20px;
+}
+
+.vpn-alert {
+    max-width: 1000px;
+    margin: 0 auto 40px;
+    background: #1f2937;
+    border-left: 6px solid #ff6b6b;
+    border-radius: 10px;
+    padding: 18px 25px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.vpn-icon {
+    font-size: 32px;
+}
+
+.vpn-alert strong {
+    color: #ff6b6b;
+}
+
+/* ============================================================
+   SECCIONES
+============================================================ */
+.section {
+    padding: 60px 20px;
+    border-bottom: 1px solid #21262d;
+}
+
+.section h2 {
+    font-size: 30px;
+    font-weight: 600;
+    border-bottom: 2px solid #30363d;
+    padding-bottom: 12px;
+    margin-bottom: 30px;
+}
+
+.section p {
+    color: #c9d1d9;
+    margin-bottom: 16px;
+}
+
+.section ol {
+    padding-left: 24px;
+    color: #c9d1d9;
+}
+
+.section ol li {
+    margin-bottom: 12px;
+}
+
+/* ============================================================
+   FEATURES
+============================================================ */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+}
+
+.feature-card {
+    background: #161b22;
+    padding: 24px 20px;
+    border-radius: 12px;
+    border: 1px solid #30363d;
+    transition: 0.2s ease;
+}
+
+.feature-card:hover {
+    border-color: #00ff41;
+    transform: translateY(-4px);
+}
+
+.feature-icon {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.feature-card h3 {
+    font-size: 18px;
+    color: #f0f6fc;
+    margin-bottom: 8px;
+}
+
+.feature-card p {
+    font-size: 15px;
+    color: #8b949e;
+}
+
+/* ============================================================
+   FILE TREE
+============================================================ */
+.file-tree {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 20px 24px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: #8b949e;
+    overflow-x: auto;
+}
+
+.file-highlight {
+    color: #00ff41;
+}
+
+/* ============================================================
+   CODE BLOCK
+============================================================ */
+.code-block {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 20px 24px;
+    font-family: 'Courier New', monospace;
+    font-size: 15px;
+    color: #e6edf3;
+    overflow-x: auto;
+}
+
+.code-block code {
+    white-space: pre-wrap;
+}
+
+/* ============================================================
+   LEGAL
+============================================================ */
+.legal {
+    border-bottom: none;
+}
+
+/* ============================================================
+   FOOTER
+============================================================ */
+.footer {
+    background: #161b22;
+    border-top: 1px solid #30363d;
+    padding: 30px 20px;
+    text-align: center;
+    font-size: 15px;
+    color: #8b949e;
+}
+
+.footer a {
+    color: #58a6ff;
+}
+
+.footer a:hover {
+    color: #00ff41;
+}
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: 36px;
+    }
+
+    .subtitle {
+        font-size: 17px;
+    }
+
+    .nav-links {
+        gap: 14px;
+    }
+
+    .vpn-alert {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .file-tree {
+        font-size: 13px;
+    }
+}
