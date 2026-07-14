@@ -1,8 +1,17 @@
+; ============================================================
+; Fuzzing Bot - AutoHotkey
+; ============================================================
+
 #NoEnv
 #SingleInstance, Force
 SetWorkingDir %A_ScriptDir%
 SetBatchLines, -1
+SetKeyDelay, 0, 0
+SendMode, Input
 
+; ============================================================
+; CONFIGURACIÓN GLOBAL
+; ============================================================
 global ExtensionesFile := A_ScriptDir . "\extensiones.txt"
 global Dominio := ""
 global Navegador := ""
@@ -10,15 +19,19 @@ global PythonScript := A_ScriptDir . "\fuzz_backend.py"
 global Directorios := []
 global Extensiones := []
 global RutasCompletas := []
-global Velocidad := "Rápida"
+global TotalRutas := 0
+global Progreso := 0
 
+; ============================================================
+; MENÚ PRINCIPAL
+; ============================================================
 FuzzBotMenu:
     Gui, FuzzBot:Destroy
     Gui, FuzzBot:New, +AlwaysOnTop, Fuzzing Bot
     Gui, FuzzBot:Color, 0x0d1117
     Gui, FuzzBot:Font, s10 cWhite, Segoe UI
 
-    Gui, FuzzBot:Add, Text, x10 y10 w380 h30 Center c00ff41, ⚡ Fuzzing Bot ⚡
+    Gui, FuzzBot:Add, Text, x10 y10 w380 h30 Center c00ff41, ⚡ FUZZING BOT ⚡
     
     Gui, FuzzBot:Add, Text, x10 y50 w120 h20 c8892b0, Navegador:
     Gui, FuzzBot:Add, DropDownList, x130 y48 w250 vNavSel, Chrome|Edge|Firefox|Brave|Opera
@@ -40,8 +53,11 @@ FuzzBotMenu:
     Gosub, CargarExtensiones
 return
 
+; ============================================================
+; CARGAR EXTENSIONES
+; ============================================================
 CargarExtensiones:
-    global ExtensionesFile, Directorios, Extensiones, RutasCompletas
+    global ExtensionesFile, Directorios, Extensiones, RutasCompletas, TotalRutas
     
     Directorios := []
     Extensiones := []
@@ -52,7 +68,7 @@ CargarExtensiones:
         return
     }
     
-    GuiControl, FuzzBot:, EstadoExtensiones, Estado: Cargando 18.000 líneas...
+    GuiControl, FuzzBot:, EstadoExtensiones, Estado: Cargando...
     
     ; Leer todas las líneas del archivo
     lineas := []
@@ -88,10 +104,14 @@ CargarExtensiones:
         RutasCompletas := Extensiones.Clone()
     }
     
-    estado := "Estado: " . Directorios.MaxIndex() . " directorios + " . Extensiones.MaxIndex() . " ext = " . RutasCompletas.MaxIndex() . " combinaciones"
+    TotalRutas := RutasCompletas.MaxIndex()
+    estado := "Estado: " . Directorios.MaxIndex() . " dirs + " . Extensiones.MaxIndex() . " ext = " . TotalRutas . " combinaciones"
     GuiControl, FuzzBot:, EstadoExtensiones, %estado%
 return
 
+; ============================================================
+; SELECCIONAR ARCHIVO
+; ============================================================
 SeleccionarExtensiones:
     FileSelectFile, archivo, 3, , Selecciona extensiones, Text Documents (*.txt)
     if archivo {
@@ -101,6 +121,9 @@ SeleccionarExtensiones:
     }
 return
 
+; ============================================================
+; INICIO DEL FUZZING
+; ============================================================
 IniciarFuzzing:
     Gui, FuzzBot:Submit, NoHide
 
@@ -114,7 +137,7 @@ IniciarFuzzing:
         Dominio := "https://" . Dominio
     }
 
-    if RutasCompletas.MaxIndex() == 0 {
+    if TotalRutas == 0 {
         MsgBox, No hay rutas cargadas.
         return
     }
@@ -134,22 +157,24 @@ IniciarFuzzing:
         return
     }
 
-    totalRutas := RutasCompletas.MaxIndex()
-    MsgBox, 4, , ⚠️ FUZZING ⚠️`n`nObjetivo: %Dominio%`nRutas: %totalRutas%`nNavegador: %NavSel%`n`n🚀 NO TOQUES EL TECLADO.
+    MsgBox, 4, , ⚠️ FUZZING ⚠️`n`nObjetivo: %Dominio%`nRutas: %TotalRutas%`nNavegador: %NavSel%`n`n🚀 NO TOQUES EL TECLADO.
     IfMsgBox No
         return
 
     EjecutarFuzzing(Navegador, Dominio, RutasCompletas)
 return
 
+; ============================================================
+; EJECUCIÓN DEL FUZZING
+; ============================================================
 EjecutarFuzzing(navegador, dominio, rutas) {
-    global
+    global TotalRutas, Progreso
     
     ; Abrir navegador
     Run, %navegador%
     Sleep, 2000
     
-    ; Nueva pestaña y cargar dominio
+    ; Nueva pestaña
     Send, ^n
     Sleep, 500
     Send, ^l
@@ -159,23 +184,20 @@ EjecutarFuzzing(navegador, dominio, rutas) {
     Send, {Enter}
     Sleep, 1500
     
-    total := rutas.MaxIndex()
-    contador := 0
+    Progreso := 0
     
     FormatTime, timestamp,, yyyy-MM-dd_HH-mm-ss
     resultadosFile := A_ScriptDir . "\fuzz_results_" . timestamp . ".txt"
     FileAppend, Resultados fuzzing en %dominio%`n`n, %resultadosFile%
     
-    ; Iniciar Python backend (rápido, en paralelo)
+    ; Iniciar Python backend
     if FileExist(PythonScript) {
         Run, python "%PythonScript%" "%dominio%" "%ExtensionesFile%" "%resultadosFile%",, Hide
     }
     
-    ; Velocidad máxima
-    SetKeyDelay, 0, 0
-    
+    ; Bucle principal
     for index, ruta in rutas {
-        contador++
+        Progreso := index
         
         ; Abrir pestaña
         Send, ^n
@@ -192,7 +214,7 @@ EjecutarFuzzing(navegador, dominio, rutas) {
             url := dominio . "/" . ruta . "/"
         }
         
-        ; Escribir URL (muy rápido)
+        ; Escribir URL
         SendInput, %url%
         Sleep, 50
         Send, {Enter}
@@ -202,13 +224,29 @@ EjecutarFuzzing(navegador, dominio, rutas) {
         Send, ^w
         Sleep, 30
         
-        ; Guardar registro
-        if Mod(contador, 50) == 0 {
-            FileAppend, %contador%: %url%`n, %resultadosFile%
-            porcentaje := Round(contador / total * 100)
-            TrayTip, Fuzzing, %porcentaje%% (%contador%/%total%), 1
+        ; Guardar cada 100
+        if Mod(index, 100) == 0 {
+            FileAppend, %index%: %url%`n, %resultadosFile%
+            porcentaje := Round(index / TotalRutas * 100)
+            TrayTip, Fuzzing, %porcentaje%% (%index%/%TotalRutas%), 1
         }
     }
     
-    MsgBox, ✅ COMPLETADO!`n`n%total% rutas probadas en %dominio%.`nResultados: %resultadosFile%
+    MsgBox, ✅ COMPLETADO!`n`n%TotalRutas% rutas probadas en %dominio%.`nResultados: %resultadosFile%
 }
+
+; ============================================================
+; ATALLO DE TECLADO
+; ============================================================
+^!F::  ; Ctrl+Alt+F
+    Gosub, FuzzBotMenu
+return
+
+; ============================================================
+; CIERRE
+; ============================================================
+FuzzBotGuiClose:
+    ExitApp
+return
+
+Gosub, FuzzBotMenu
