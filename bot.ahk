@@ -11,7 +11,7 @@ SetKeyDelay, 0, 0
 SendMode, Input
 
 ; ============================================================
-; CONFIGURACION GLOBAL
+; GLOBAL CONFIGURATION
 ; ============================================================
 global ExtensionesFile := A_ScriptDir . "\extensiones.txt"
 global Dominio := ""
@@ -24,7 +24,7 @@ global TotalRutas := 0
 global FuzzingActivo := false
 
 ; ============================================================
-; MENU PRINCIPAL
+; MAIN MENU
 ; ============================================================
 FuzzBotMenu:
     Gui, FuzzBot:Destroy
@@ -34,30 +34,30 @@ FuzzBotMenu:
 
     Gui, FuzzBot:Add, Text, x10 y10 w380 h30 Center c00ff41, FUZZINGLOCALBOT v2.0
     
-    Gui, FuzzBot:Add, Text, x10 y50 w120 h20 c8892b0, Navegador:
+    Gui, FuzzBot:Add, Text, x10 y50 w120 h20 c8892b0, Browser:
     Gui, FuzzBot:Add, DropDownList, x130 y48 w250 vNavSel, Chrome|Edge|Firefox|Brave|Opera
 
-    Gui, FuzzBot:Add, Text, x10 y80 w120 h20 c8892b0, Dominio:
-    Gui, FuzzBot:Add, Edit, x130 y78 w250 vDominioInput, https://ejemplo.com
+    Gui, FuzzBot:Add, Text, x10 y80 w120 h20 c8892b0, Domain:
+    Gui, FuzzBot:Add, Edit, x130 y78 w250 vDominioInput, https://example.com
 
-    Gui, FuzzBot:Add, Text, x10 y110 w120 h20 c8892b0, Extensiones:
+    Gui, FuzzBot:Add, Text, x10 y110 w120 h20 c8892b0, Wordlist:
     Gui, FuzzBot:Add, Edit, x130 y108 w200 vExtFileReadOnly ReadOnly, %ExtensionesFile%
     Gui, FuzzBot:Add, Button, x335 y108 w45 h20 gSeleccionarExtensiones, ...
 
-    Gui, FuzzBot:Add, Text, x10 y140 w370 h20 c8892b0 vEstadoExtensiones, Estado: Cargando...
+    Gui, FuzzBot:Add, Text, x10 y140 w370 h20 c8892b0 vEstadoExtensiones, Status: Loading...
 
-    Gui, FuzzBot:Add, Button, x10 y170 w370 h40 gIniciarFuzzing, INICIAR FUZZING
+    Gui, FuzzBot:Add, Button, x10 y170 w370 h40 gIniciarFuzzing, START FUZZING
 
     Gui, FuzzBot:Add, Progress, x10 y220 w370 h20 c00ff41 vBarraProgreso, 0
 
-    Gui, FuzzBot:Add, Text, x10 y250 w370 h30 Center cFF5555 vTextoEstado, Listo para empezar.
+    Gui, FuzzBot:Add, Text, x10 y250 w370 h30 Center cFF5555 vTextoEstado, Ready to start.
 
     Gui, FuzzBot:Show, w390 h300
     Gosub, CargarExtensiones
 return
 
 ; ============================================================
-; CARGAR EXTENSIONES
+; LOAD WORDLIST
 ; ============================================================
 CargarExtensiones:
     global ExtensionesFile, Directorios, Extensiones, RutasCompletas, TotalRutas
@@ -67,11 +67,11 @@ CargarExtensiones:
     RutasCompletas := []
     
     if !FileExist(ExtensionesFile) {
-        GuiControl, FuzzBot:, EstadoExtensiones, Estado: extensiones.txt no encontrado
+        GuiControl, FuzzBot:, EstadoExtensiones, Status: extensiones.txt not found
         return
     }
     
-    GuiControl, FuzzBot:, EstadoExtensiones, Estado: Cargando...
+    GuiControl, FuzzBot:, EstadoExtensiones, Status: Loading...
     
     lineas := []
     Loop, Read, %ExtensionesFile%
@@ -105,15 +105,15 @@ CargarExtensiones:
     }
     
     TotalRutas := RutasCompletas.MaxIndex()
-    estado := "Estado: " . Directorios.MaxIndex() . " dirs + " . Extensiones.MaxIndex() . " ext = " . TotalRutas . " combinaciones"
+    estado := "Status: " . Directorios.MaxIndex() . " dirs + " . Extensiones.MaxIndex() . " ext = " . TotalRutas . " combinations"
     GuiControl, FuzzBot:, EstadoExtensiones, %estado%
 return
 
 ; ============================================================
-; SELECCIONAR ARCHIVO
+; SELECT FILE
 ; ============================================================
 SeleccionarExtensiones:
-    FileSelectFile, archivo, 3, , Selecciona extensiones, Text Documents (*.txt)
+    FileSelectFile, archivo, 3, , Select wordlist, Text Documents (*.txt)
     if archivo {
         ExtensionesFile := archivo
         GuiControl, FuzzBot:, ExtFileReadOnly, %ExtensionesFile%
@@ -122,14 +122,14 @@ SeleccionarExtensiones:
 return
 
 ; ============================================================
-; INICIO DEL FUZZING
+; START FUZZING
 ; ============================================================
 IniciarFuzzing:
     Gui, FuzzBot:Submit, NoHide
 
     Dominio := Trim(DominioInput)
-    if !Dominio || Dominio == "https://ejemplo.com" {
-        MsgBox, 16, Error, Introduce un dominio valido.
+    if !Dominio || Dominio == "https://example.com" {
+        MsgBox, 16, Error, Enter a valid domain.
         return
     }
     
@@ -138,7 +138,7 @@ IniciarFuzzing:
     }
 
     if TotalRutas == 0 {
-        MsgBox, 16, Error, No hay rutas cargadas.
+        MsgBox, 16, Error, No routes loaded.
         return
     }
 
@@ -153,22 +153,22 @@ IniciarFuzzing:
     } else if NavSel = "Opera" {
         Navegador := "opera.exe"
     } else {
-        MsgBox, 16, Error, Selecciona un navegador.
+        MsgBox, 16, Error, Select a browser.
         return
     }
 
     MsgBox, 4, FuzzingLocalBot v2.0, 
     (
-    CONFIGURACION DEL ESCANEO:
+    SCAN CONFIGURATION:
     
-    Objetivo: %Dominio%
-    Rutas: %TotalRutas%
-    Navegador: %NavSel%
+    Target: %Dominio%
+    Routes: %TotalRutas%
+    Browser: %NavSel%
     
-    El backend Python hara el fuzzing real.
-    La ventana de CMD mostrara el progreso.
+    Python backend will do the real fuzzing.
+    The CMD window will show the progress.
     
-    DESEA CONTINUAR?
+    DO YOU WANT TO CONTINUE?
     )
     IfMsgBox No
         return
@@ -177,35 +177,35 @@ IniciarFuzzing:
 return
 
 ; ============================================================
-; EJECUCION DEL FUZZING
+; RUN FUZZING
 ; ============================================================
 EjecutarFuzzing(navegador, dominio, rutas) {
     global TotalRutas, FuzzingActivo, PythonScript, ExtensionesFile
     
     FuzzingActivo := true
-    GuiControl, FuzzBot:, TextoEstado, Iniciando backend Python...
+    GuiControl, FuzzBot:, TextoEstado, Starting Python backend...
     GuiControl, FuzzBot:, BarraProgreso, 0
     
     FormatTime, timestamp,, yyyy-MM-dd_HH-mm-ss
     resultadosFile := A_ScriptDir . "\output\scan_" . timestamp . ".txt"
     
-    ; Crear carpeta output si no existe
+    ; Create output folder if not exists
     FileCreateDir, %A_ScriptDir%\output
     
-    ; Iniciar Python backend en una ventana visible de CMD
+    ; Start Python backend in visible CMD window
     if FileExist(PythonScript) {
-        GuiControl, FuzzBot:, TextoEstado, Backend Python ejecutandose. Mira la ventana CMD.
+        GuiControl, FuzzBot:, TextoEstado, Python backend running. Check the CMD window.
         Run, cmd /k python "%PythonScript%" "%dominio%" "%ExtensionesFile%" "%resultadosFile%", , , PID
     } else {
-        MsgBox, 16, Error, No se encontro %PythonScript%
+        MsgBox, 16, Error, %PythonScript% not found.
         FuzzingActivo := false
-        GuiControl, FuzzBot:, TextoEstado, Error: Script no encontrado.
+        GuiControl, FuzzBot:, TextoEstado, Error: Script not found.
         return
     }
     
-    ; Esperar a que termine el proceso Python
+    ; Wait for Python process to finish
     Sleep, 2000
-    GuiControl, FuzzBot:, TextoEstado, Escaneando... Espera a que termine la ventana CMD.
+    GuiControl, FuzzBot:, TextoEstado, Scanning... Wait for the CMD window to finish.
     
     loop {
         Process, Exist, %PID%
@@ -217,9 +217,9 @@ EjecutarFuzzing(navegador, dominio, rutas) {
     
     FuzzingActivo := false
     GuiControl, FuzzBot:, BarraProgreso, 100
-    GuiControl, FuzzBot:, TextoEstado, Escaneo completado.
+    GuiControl, FuzzBot:, TextoEstado, Scan completed.
     
-    ; Buscar reportes generados
+    ; Search for generated reports
     reporteHTML := ""
     Loop, Files, %A_ScriptDir%\output\report_*.html
     {
@@ -229,12 +229,12 @@ EjecutarFuzzing(navegador, dominio, rutas) {
     if reporteHTML != "" {
         MsgBox, 4, FuzzingLocalBot v2.0,
         (
-        ESCANEO COMPLETADO!
+        SCAN COMPLETED!
         
-        Resultados: %resultadosFile%
-        Reporte: %reporteHTML%
+        Results: %resultadosFile%
+        Report: %reporteHTML%
         
-        DESEA ABRIR EL REPORTE?
+        DO YOU WANT TO OPEN THE REPORT?
         )
         IfMsgBox Yes
         {
@@ -243,29 +243,29 @@ EjecutarFuzzing(navegador, dominio, rutas) {
     } else {
         MsgBox, 64, FuzzingLocalBot v2.0,
         (
-        ESCANEO COMPLETADO!
+        SCAN COMPLETED!
         
-        Resultados guardados en: %resultadosFile%
+        Results saved to: %resultadosFile%
         )
     }
     
-    GuiControl, FuzzBot:, TextoEstado, Listo para otro escaneo.
+    GuiControl, FuzzBot:, TextoEstado, Ready for another scan.
     GuiControl, FuzzBot:, BarraProgreso, 0
 }
 
 ; ============================================================
-; ATALLO DE TECLADO
+; KEYBOARD SHORTCUT
 ; ============================================================
 ^!F::
     Gosub, FuzzBotMenu
 return
 
 ; ============================================================
-; CIERRE
+; CLOSE
 ; ============================================================
 FuzzBotGuiClose:
     if FuzzingActivo {
-        MsgBox, 4, FuzzingLocalBot, Hay un escaneo en curso. Desea salir?
+        MsgBox, 4, FuzzingLocalBot, A scan is in progress. Do you want to exit?
         IfMsgBox No
             return
     }
