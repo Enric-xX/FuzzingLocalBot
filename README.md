@@ -62,7 +62,7 @@ pip install -r requirements.txt
 - Select the browser
 
 - Enter the target domain (e.g., https://example.com)
-- 
+  
 - Click START FUZZING
 
 ### From terminal (Linux / Windows)
