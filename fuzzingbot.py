@@ -17,41 +17,41 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 try:
     import requests
 except ImportError:
-    print("[!] Instala requests: pip install requests")
+    print("[!] Install requests: pip install requests")
     sys.exit(1)
 
 # ============================================================
-# CONFIGURACIÓN
+# CONFIGURATION
 # ============================================================
 TIMEOUT = 3
 THREADS = 50
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 MAX_RETRIES = 2
-ENCONTRADOS = 0
+FOUND = 0
 TOTAL = 0
 LOCK = threading.Lock()
-INICIO = time.time()
-ULTIMA_ACTUALIZACION = time.time()
+START_TIME = time.time()
+LAST_UPDATE = time.time()
 
 # ============================================================
-# UTILIDADES
+# UTILITIES
 # ============================================================
-def log(mensaje):
+def log(message):
     timestamp = datetime.now().strftime("%H:%M:%S")
-    print(f"[{timestamp}] {mensaje}")
+    print(f"[{timestamp}] {message}")
 
-def mostrar_progreso():
-    global ENCONTRADOS, TOTAL, INICIO, ULTIMA_ACTUALIZACION
-    if time.time() - ULTIMA_ACTUALIZACION < 2:
+def show_progress():
+    global FOUND, TOTAL, START_TIME, LAST_UPDATE
+    if time.time() - LAST_UPDATE < 2:
         return
-    ULTIMA_ACTUALIZACION = time.time()
-    elapsed = time.time() - INICIO
+    LAST_UPDATE = time.time()
+    elapsed = time.time() - START_TIME
     if elapsed > 0 and TOTAL > 0:
-        velocidad = ENCONTRADOS / elapsed
-        estimado = (TOTAL - ENCONTRADOS) / (velocidad + 0.001)
-        log(f"Progreso: {ENCONTRADOS}/{TOTAL} encontrados | Vel: {velocidad:.1f}/s | Est: {estimado:.0f}s")
+        speed = FOUND / elapsed
+        eta = (TOTAL - FOUND) / (speed + 0.001)
+        log(f"Progress: {FOUND}/{TOTAL} found | Speed: {speed:.1f}/s | ETA: {eta:.0f}s")
 
-def mostrar_banner():
+def show_banner():
     print("""
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
@@ -63,69 +63,69 @@ def mostrar_banner():
 ║   ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚═╝╚═╝  ╚═══╝ ╚═════╝   ║
 ║                                                              ║
 ╠══════════════════════════════════════════════════════════════╣
-║  RECOMENDACION: USA UNA VPN ANTES DE EJECUTAR ESTO          ║
-║  Solo para pentesting autorizado                            ║
+║  RECOMMENDATION: USE A VPN BEFORE RUNNING THIS              ║
+║  Only for authorized pentesting                             ║
 ╚══════════════════════════════════════════════════════════════╝
 """)
 
-def mostrar_ayuda():
+def show_help():
     print("""
-Uso: python fuzzingbot.py <dominio> <extensiones.txt> <resultados.txt>
+Usage: python fuzzingbot.py <domain> <wordlist.txt> <results.txt>
 
-Ejemplo:
-    python fuzzingbot.py https://ejemplo.com extensiones.txt resultados.txt
+Example:
+    python fuzzingbot.py https://example.com wordlist.txt results.txt
 
-Parametros:
-    dominio         - URL objetivo (ej: https://ejemplo.com)
-    extensiones.txt - Archivo con directorios y extensiones
-    resultados.txt  - Archivo donde se guardaran los resultados
+Parameters:
+    domain      - Target URL (e.g. https://example.com)
+    wordlist.txt - File with directories and extensions
+    results.txt  - File where results will be saved
 """)
 
 # ============================================================
-# CARGA DE EXTENSIONES
+# LOAD WORDLIST
 # ============================================================
-def cargar_extensiones(archivo):
-    directorios = []
-    extensiones = []
+def load_wordlist(filepath):
+    directories = []
+    extensions = []
     
-    if not os.path.exists(archivo):
-        log(f"ERROR: Archivo {archivo} no encontrado.")
+    if not os.path.exists(filepath):
+        log(f"ERROR: File {filepath} not found.")
         return [], []
     
-    log(f"Cargando {archivo}...")
+    log(f"Loading {filepath}...")
     
-    with open(archivo, "r", encoding="utf-8") as f:
-        for linea in f:
-            linea = linea.strip()
-            if not linea or linea.startswith("#"):
+    with open(filepath, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
                 continue
             
-            if "." in linea and "/" not in linea and "\\" not in linea:
-                if not linea.startswith("*"):
-                    extensiones.append(linea)
+            if "." in line and "/" not in line and "\\" not in line:
+                if not line.startswith("*"):
+                    extensions.append(line)
             else:
-                directorios.append(linea)
+                directories.append(line)
     
-    log(f"Cargados: {len(directorios)} directorios, {len(extensiones)} extensiones")
-    return directorios, extensiones
+    log(f"Loaded: {len(directories)} directories, {len(extensions)} extensions")
+    return directories, extensions
 
-def generar_rutas(directorios, extensiones):
-    if directorios and extensiones:
-        total = len(directorios) * len(extensiones)
-        log(f"Generando {total} combinaciones...")
-        return [d + e for d in directorios for e in extensiones]
-    elif directorios:
-        return directorios.copy()
-    elif extensiones:
-        return extensiones.copy()
+def generate_routes(directories, extensions):
+    if directories and extensions:
+        total = len(directories) * len(extensions)
+        log(f"Generating {total} combinations...")
+        return [d + e for d in directories for e in extensions]
+    elif directories:
+        return directories.copy()
+    elif extensions:
+        return extensions.copy()
     return []
 
 # ============================================================
-# PROBAR URL
+# TEST URL
 # ============================================================
-def probar_url(url, timeout=TIMEOUT):
+def test_url(url, timeout=TIMEOUT):
     headers = {"User-Agent": USER_AGENT}
-    for intento in range(MAX_RETRIES + 1):
+    for attempt in range(MAX_RETRIES + 1):
         try:
             response = requests.get(
                 url,
@@ -145,11 +145,11 @@ def probar_url(url, timeout=TIMEOUT):
                 "headers": dict(response.headers)
             }
         except requests.exceptions.Timeout:
-            if intento < MAX_RETRIES:
+            if attempt < MAX_RETRIES:
                 continue
             return {"url": url, "status": "timeout", "exists": False}
         except requests.exceptions.ConnectionError:
-            if intento < MAX_RETRIES:
+            if attempt < MAX_RETRIES:
                 continue
             return {"url": url, "status": "connection_error", "exists": False}
         except Exception as e:
@@ -157,148 +157,136 @@ def probar_url(url, timeout=TIMEOUT):
     return {"url": url, "status": "error", "exists": False}
 
 # ============================================================
-# PROGRESO EN TIEMPO REAL
+# REAL-TIME PROGRESS
 # ============================================================
-def mostrar_progreso_periodico(total, encontrados, inicio):
-    global ULTIMA_ACTUALIZACION
+def show_periodic_progress(total, found, start_time):
+    global LAST_UPDATE
     while True:
         time.sleep(5)
-        elapsed = time.time() - inicio
+        elapsed = time.time() - start_time
         if total > 0 and elapsed > 0:
-            velocidad = encontrados / elapsed
-            restante = total - encontrados
-            estimado = restante / (velocidad + 0.001) if velocidad > 0 else 0
-            log(f"Progreso: {encontrados}/{total} | Vel: {velocidad:.1f}/s | Est: {estimado:.0f}s")
+            speed = found / elapsed
+            remaining = total - found
+            eta = remaining / (speed + 0.001) if speed > 0 else 0
+            log(f"Progress: {found}/{total} | Speed: {speed:.1f}/s | ETA: {eta:.0f}s")
 
 # ============================================================
 # MAIN
 # ============================================================
 def main():
-    global ENCONTRADOS, TOTAL, INICIO
+    global FOUND, TOTAL, START_TIME
     
-    # Mostrar banner y recomendacion
-    mostrar_banner()
+    show_banner()
     
-    # Verificar argumentos
     if len(sys.argv) < 4:
-        mostrar_ayuda()
+        show_help()
         sys.exit(1)
     
-    dominio = sys.argv[1]
-    ext_file = sys.argv[2]
+    domain = sys.argv[1]
+    wordlist_file = sys.argv[2]
     results_file = sys.argv[3]
     
-    log(f"Iniciando backend para {dominio}")
+    log(f"Starting backend for {domain}")
     
-    # Cargar extensiones
-    directorios, extensiones = cargar_extensiones(ext_file)
-    if not directorios and not extensiones:
-        log("ERROR: No se cargaron directorios ni extensiones.")
+    directories, extensions = load_wordlist(wordlist_file)
+    if not directories and not extensions:
+        log("ERROR: Could not load directories or extensions.")
         sys.exit(1)
     
-    # Generar rutas
-    rutas = generar_rutas(directorios, extensiones)
-    TOTAL = len(rutas)
+    routes = generate_routes(directories, extensions)
+    TOTAL = len(routes)
     
     if TOTAL == 0:
-        log("ERROR: No se generaron rutas.")
+        log("ERROR: No routes generated.")
         sys.exit(1)
     
-    log(f"Total de rutas a probar: {TOTAL}")
+    log(f"Total routes to test: {TOTAL}")
     
-    # Inicio
-    INICIO = time.time()
-    resultados = []
-    ENCONTRADOS = 0
-    hilo_progreso = threading.Thread(target=mostrar_progreso_periodico, args=(TOTAL, ENCONTRADOS, INICIO), daemon=True)
-    hilo_progreso.start()
+    START_TIME = time.time()
+    results = []
+    FOUND = 0
+    progress_thread = threading.Thread(target=show_periodic_progress, args=(TOTAL, FOUND, START_TIME), daemon=True)
+    progress_thread.start()
     
-    # Probar en paralelo
-    log(f"Probando con {THREADS} threads...")
+    log(f"Testing with {THREADS} threads...")
     
     with ThreadPoolExecutor(max_workers=THREADS) as executor:
-        futures = {executor.submit(probar_url, urljoin(dominio, ruta)): ruta for ruta in rutas}
+        futures = {executor.submit(test_url, urljoin(domain, route)): route for route in routes}
         
         for i, future in enumerate(as_completed(futures), 1):
-            resultado = future.result()
-            resultados.append(resultado)
+            result = future.result()
+            results.append(result)
             
-            if resultado.get("exists", False):
-                ENCONTRADOS += 1
+            if result.get("exists", False):
+                FOUND += 1
                 with open(results_file, "a", encoding="utf-8") as f:
-                    f.write(f"[{resultado['status']}] {resultado['url']}\n")
-                log(f"ENCONTRADO: {resultado['status']} {resultado['url']}")
+                    f.write(f"[{result['status']}] {result['url']}\n")
+                log(f"FOUND: {result['status']} {result['url']}")
             
-            # Progreso cada 100
             if i % 100 == 0:
-                mostrar_progreso()
+                show_progress()
     
-    # Guardar resultados completos en JSON
     json_file = results_file.replace(".txt", ".json")
     with open(json_file, "w", encoding="utf-8") as f:
-        json.dump(resultados, f, ensure_ascii=False, indent=2)
+        json.dump(results, f, ensure_ascii=False, indent=2)
     
-    # Resumen final
-    elapsed = time.time() - INICIO
+    elapsed = time.time() - START_TIME
     log("=" * 50)
-    log(f"COMPLETADO")
-    log(f"   Total rutas: {TOTAL}")
-    log(f"   Encontradas: {ENCONTRADOS}")
-    log(f"   Tiempo: {elapsed:.1f}s")
-    log(f"   Velocidad: {TOTAL/elapsed:.1f} rutas/s")
-    log(f"   Resultados: {results_file}")
+    log(f"COMPLETED")
+    log(f"   Total routes: {TOTAL}")
+    log(f"   Found: {FOUND}")
+    log(f"   Time: {elapsed:.1f}s")
+    log(f"   Speed: {TOTAL/elapsed:.1f} routes/s")
+    log(f"   Results: {results_file}")
     log(f"   JSON: {json_file}")
     log("=" * 50)
     
     # ============================================================
-    # ANALISIS Y REPORTE
+    # ANALYSIS AND REPORT
     # ============================================================
     try:
         from analyzer import Analyzer
         from reporter import Reporter
         
-        log("\nAnalizando resultados...")
+        log("\nAnalyzing results...")
         analyzer = Analyzer()
         
-        # Establecer baseline (longitud de la pagina de error generica)
-        if resultados:
-            lengths = [r.get("content_length", 0) for r in resultados if r.get("status") == 200]
+        if results:
+            lengths = [r.get("content_length", 0) for r in results if r.get("status") == 200]
             if lengths:
                 baseline = max(set(lengths), key=lengths.count)
                 analyzer.set_baseline(baseline)
         
-        # Analizar cada resultado
-        for r in resultados:
+        for r in results:
             if r.get("exists", False) or r.get("status") in [401, 403, 500]:
                 analyzer.analyze(r)
         
-        # Generar reportes
-        log("Generando reportes...")
-        reporter = Reporter(dominio, analyzer)
+        log("Generating reports...")
+        reporter = Reporter(domain, analyzer)
         
         md_file = reporter.save_markdown(TOTAL, elapsed, output_dir="output")
         html_file = reporter.save_html(TOTAL, elapsed, output_dir="output")
         
         summary = analyzer.get_summary()
-        log(f"   Criticos: {summary['critical']}")
-        log(f"   Altos: {summary['high']}")
-        log(f"   Medios: {summary['medium']}")
-        log(f"   Bajos: {summary['low']}")
+        log(f"   Critical: {summary['critical']}")
+        log(f"   High: {summary['high']}")
+        log(f"   Medium: {summary['medium']}")
+        log(f"   Low: {summary['low']}")
         log(f"   Info: {summary['info']}")
-        log(f"   Reporte MD: {md_file}")
-        log(f"   Reporte HTML: {html_file}")
+        log(f"   MD Report: {md_file}")
+        log(f"   HTML Report: {html_file}")
         
     except ImportError:
-        log("analyzer.py o reporter.py no encontrados. Reportes no generados.")
+        log("analyzer.py or reporter.py not found. Reports not generated.")
     except Exception as e:
-        log(f"Error generando reportes: {e}")
+        log(f"Error generating reports: {e}")
 
 if __name__ == "__main__":
     try:
         signal.signal(signal.SIGINT, lambda s, f: sys.exit(0))
         main()
     except KeyboardInterrupt:
-        log("Interrumpido por el usuario.")
+        log("Interrupted by user.")
     except Exception as e:
         log(f"ERROR: {e}")
         import traceback
