@@ -2,8 +2,11 @@
 
 Automatización de fuzzing de directorios y extensiones con análisis inteligente y reportes profesionales para pentesting autorizado.
 
-![Python](https://img.shields.io/badge/Python-3.6+-blue)
-![License](https://img.shields.io/badge/License-GPL%20v3-orange)
+![Linux](https://img.shields.io/badge/Linux-orange)
+![Windows](https://img.shields.io/badge/Windows-blue)
+![Python](https://img.shields.io/badge/Python-3.6+-yellow)
+![License](https://img.shields.io/badge/License-GPL%20v3-red)
+![AutoHotKey](https://img.shields.io/badge/AutoHotkey-1.1+-green)
 
 ---
 
