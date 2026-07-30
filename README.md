@@ -1,12 +1,15 @@
 # FuzzingLocalBot v2.0
-![Uploading image.png…]()
-
 
 Automatización de fuzzing de directorios y extensiones con análisis inteligente y reportes profesionales para pentesting autorizado.
 
-
 ![Python](https://img.shields.io/badge/Python-3.6+-blue)
 ![License](https://img.shields.io/badge/License-GPL%20v3-orange)
+
+---
+
+<img width="1200" height="400" alt="image" src="https://github.com/user-attachments/assets/9421c603-84a2-4985-9022-0c5dff58f78c" />
+
+
 ---
 
 ## Dependencias
