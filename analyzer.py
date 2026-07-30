@@ -9,10 +9,9 @@ Analiza las respuestas HTTP y clasifica los hallazgos por gravedad.
 import re
 
 # ============================================================
-# CONFIGURACIÓN DE FIRMAS
+# CONFIGURACION DE FIRMAS
 # ============================================================
 
-# Tecnologías detectables
 TECH_SIGNATURES = {
     "WordPress": ["wp-content", "wp-json", "wp-includes", "wordpress"],
     "Joomla": ["joomla", "com_content"],
@@ -25,7 +24,6 @@ TECH_SIGNATURES = {
     "Django": ["django", "csrftoken"],
 }
 
-# Patrones de riesgo
 RISK_PATTERNS = {
     "directory_listing": ["Index of /", "Parent Directory", "[DIR]"],
     "phpinfo": ["phpinfo", "PHP Version"],
@@ -37,7 +35,6 @@ RISK_PATTERNS = {
     "git_exposed": [".git/HEAD", "refs/heads"],
 }
 
-# Clasificación por status code
 STATUS_CLASSIFICATION = {
     200: "found",
     301: "redirect",
@@ -66,23 +63,11 @@ class Analyzer:
         self.baseline_length = None
 
     def set_baseline(self, length):
-        """Establece la longitud de respuesta baseline (página de error genérica)."""
         self.baseline_length = length
 
     def analyze(self, result):
-        """
-        Analiza un resultado y devuelve la clasificación.
-        
-        Args:
-            result: dict con 'url', 'status', 'content_type', 'content_length', 
-                    'redirect', 'content' (opcional)
-        
-        Returns:
-            dict con la clasificación del hallazgo
-        """
         url = result.get("url", "")
         status = result.get("status", 0)
-        content_type = result.get("content_type", "")
         content_length = result.get("content_length", 0)
         content = result.get("content", "")
         headers = result.get("headers", {})
@@ -90,72 +75,62 @@ class Analyzer:
         findings = []
         risk_level = "info"
 
-        # 1. Clasificar por status code
-        status_type = STATUS_CLASSIFICATION.get(status, "unknown")
-
-        # 2. Ignorar falsos positivos
+        # 1. Ignorar falsos positivos
         if status == 200 and self.baseline_length and content_length == self.baseline_length:
             return {"url": url, "risk": "false_positive", "findings": ["Misma longitud que baseline"]}
 
-        # 3. Detectar tecnologías
+        # 2. Detectar tecnologias
         for tech, signatures in TECH_SIGNATURES.items():
             for sig in signatures:
                 if sig.lower() in content.lower() or sig in headers.get("Server", ""):
                     self.technologies.add(tech)
-                    findings.append(f"Technology: {tech}")
+                    if "Technology: " + tech not in findings:
+                        findings.append("Technology: " + tech)
 
-        # 4. Detectar riesgos
+        # 3. Detectar riesgos
         if status == 200:
-            # Directory listing
             for pattern in RISK_PATTERNS["directory_listing"]:
                 if pattern in content:
                     findings.append("Directory listing enabled")
                     risk_level = "critical"
                     break
 
-            # PHP Info
             for pattern in RISK_PATTERNS["phpinfo"]:
                 if pattern in content:
                     findings.append("PHP info exposed")
                     risk_level = "critical"
                     break
 
-            # SQL dump
             for pattern in RISK_PATTERNS["sql_dump"]:
                 if pattern in content:
                     findings.append("SQL dump exposed")
                     risk_level = "critical"
                     break
 
-            # Backup files
             for pattern in RISK_PATTERNS["backup_file"]:
                 if pattern in url.lower():
                     findings.append("Backup file exposed")
                     risk_level = "high"
                     break
 
-            # Config files
             for pattern in RISK_PATTERNS["config_file"]:
                 if pattern in url.lower():
                     findings.append("Config file exposed")
                     risk_level = "high"
                     break
 
-            # Git exposed
             for pattern in RISK_PATTERNS["git_exposed"]:
                 if pattern in content:
                     findings.append("Git repository exposed")
                     risk_level = "critical"
                     break
 
-            # Error disclosure
             for pattern in RISK_PATTERNS["error_disclosure"]:
                 if pattern in content:
                     findings.append("Error messages disclosed")
                     risk_level = "medium"
                     break
 
-            # Login form
             has_form = False
             for pattern in RISK_PATTERNS["login_form"]:
                 if pattern in content.lower():
@@ -169,7 +144,7 @@ class Analyzer:
                 findings.append("Redirects to login page")
                 risk_level = "low"
             else:
-                findings.append(f"Redirect to: {redirect_url}")
+                findings.append("Redirect to: " + redirect_url)
                 risk_level = "info"
 
         elif status == 403:
@@ -181,34 +156,33 @@ class Analyzer:
             risk_level = "medium"
 
         elif status >= 500:
-            findings.append(f"Server error ({status})")
+            findings.append("Server error (" + str(status) + ")")
             risk_level = "high"
 
-        # 5. Fingerprinting por headers
+        # 4. Fingerprinting por headers
         server = headers.get("Server", "")
         powered_by = headers.get("X-Powered-By", "")
 
         if server:
-            findings.append(f"Server: {server}")
+            findings.append("Server: " + server)
             if "Apache" in server:
                 self.technologies.add("Apache")
-                # Extraer versión si está expuesta
                 version_match = re.search(r"Apache/([\d.]+)", server)
                 if version_match:
-                    findings.append(f"Apache version: {version_match.group(1)}")
+                    findings.append("Apache version: " + version_match.group(1))
             elif "nginx" in server:
                 self.technologies.add("Nginx")
 
         if powered_by:
-            findings.append(f"X-Powered-By: {powered_by}")
+            findings.append("X-Powered-By: " + powered_by)
             self.technologies.add("PHP")
 
-        # 6. Determinar nivel de riesgo final
+        # 5. Nivel de riesgo final
         if not findings:
             risk_level = "info"
             findings.append("No significant findings")
 
-        # 7. Almacenar en la categoría correspondiente
+        # 6. Almacenar
         finding = {
             "url": url,
             "status": status,
@@ -231,7 +205,6 @@ class Analyzer:
         return finding
 
     def get_summary(self):
-        """Devuelve un resumen de los hallazgos."""
         return {
             "critical": len(self.findings["critical"]),
             "high": len(self.findings["high"]),
@@ -242,13 +215,9 @@ class Analyzer:
         }
 
     def get_findings(self):
-        """Devuelve todos los hallazgos categorizados."""
         return self.findings
 
 
-# ============================================================
-# TEST
-# ============================================================
 if __name__ == "__main__":
     print("[*] Analyzer module loaded successfully.")
     print("[*] Use: from analyzer import Analyzer")
