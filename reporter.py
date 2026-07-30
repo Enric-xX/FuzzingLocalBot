@@ -14,18 +14,12 @@ class Reporter:
     """Genera informes a partir de los resultados del Analyzer."""
 
     def __init__(self, target, analyzer):
-        """
-        Args:
-            target: dominio objetivo
-            analyzer: instancia de Analyzer con los resultados
-        """
         self.target = target
         self.analyzer = analyzer
         self.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.file_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     def generate_markdown(self, total_urls=0, duration=0):
-        """Genera un informe en formato Markdown."""
         summary = self.analyzer.get_summary()
         findings = self.analyzer.get_findings()
 
@@ -106,10 +100,6 @@ class Reporter:
             report += "- **URGENT:** Address critical findings immediately.\n"
         if summary["high"] > 0:
             report += "- Review and fix high severity issues.\n"
-        if "Apache" in summary.get("technologies", []):
-            report += "- Ensure Apache is updated to the latest version.\n"
-        if "PHP" in summary.get("technologies", []):
-            report += "- Ensure PHP is updated to the latest version.\n"
         report += "- Disable directory listing on all servers.\n"
         report += "- Remove backup and configuration files from public access.\n"
         report += "- Hide server version information.\n"
@@ -124,11 +114,9 @@ class Reporter:
         return report
 
     def save_markdown(self, total_urls=0, duration=0, output_dir="output"):
-        """Guarda el informe en formato Markdown."""
         os.makedirs(output_dir, exist_ok=True)
         filename = f"report_{self.target.replace('://', '_').replace('/', '_')}_{self.file_timestamp}.md"
         filepath = os.path.join(output_dir, filename)
-
         report = self.generate_markdown(total_urls, duration)
 
         with open(filepath, "w", encoding="utf-8") as f:
@@ -137,10 +125,8 @@ class Reporter:
         return filepath
 
     def save_html(self, total_urls=0, duration=0, output_dir="output"):
-        """Guarda el informe en formato HTML."""
         md_report = self.generate_markdown(total_urls, duration)
 
-        # Conversión básica Markdown → HTML
         html_report = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -174,9 +160,6 @@ class Reporter:
         return filepath
 
 
-# ============================================================
-# TEST
-# ============================================================
 if __name__ == "__main__":
     print("[*] Reporter module loaded successfully.")
     print("[*] Use: from reporter import Reporter")
