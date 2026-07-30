@@ -1,4 +1,6 @@
 # FuzzingLocalBot v2.0
+![Uploading image.png…]()
+
 
 Automatización de fuzzing de directorios y extensiones con análisis inteligente y reportes profesionales para pentesting autorizado.
 
