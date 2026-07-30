@@ -89,6 +89,7 @@ python fuzzingbot.py https://ejemplo.com extensiones.txt resultados.txt
 
 ## Estructura
 
+```
 FuzzingLocalBot/
 ├── LICENSE                 Licencia GPL v3
 ├── README.md               Este archivo
@@ -105,6 +106,7 @@ FuzzingLocalBot/
     ├── report_*.md          Informe en Markdown
     └── report_*.html        Informe en HTML
 
+```
 ---
 
 ## Aviso de seguridad
