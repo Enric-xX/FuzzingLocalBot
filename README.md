@@ -1,37 +1,131 @@
-# ⚡ Fuzzing Bot
+# FuzzingLocalBot v2.0
 
-> Automatización de fuzzing de directorios y extensiones para pentesting autorizado.
+Automatización de fuzzing de directorios y extensiones con análisis inteligente y reportes profesionales para pentesting autorizado.
 
-[![Status](https://img.shields.io/badge/status-active-brightgreen)](https://github.com/)
-[![Python](https://img.shields.io/badge/python-3.8+-yellow)](https://python.org/)
-[![AutoHotkey](https://img.shields.io/badge/AutoHotkey-v2.0-orange)](https://www.autohotkey.com/)
+
+![Python](https://img.shields.io/badge/Python-3.6+-blue)
+![License](https://img.shields.io/badge/License-GPL%20v3-orange)
+---
+
+## Dependencias
+
+Antes de instalar, necesitas tener instalado:
+
+| Programa | Descarga | ¿Obligatorio? |
+|----------|----------|---------------|
+| **Python 3.6+** | [python.org/downloads](https://www.python.org/downloads/) | ✅ Sí |
+| **AutoHotkey 1.1+** | [autohotkey.com/download](https://www.autohotkey.com/download/) | ⚠️ Solo para GUI (Windows) |
 
 ---
 
-## 🔒 Aviso de seguridad
+## Instalación
 
-**RECOMENDACIÓN:** Usa una **VPN** antes de ejecutar esta herramienta.
+### Linux 
 
-⚠️ Esta herramienta es **exclusivamente** para pentesting autorizado. No la uses contra sistemas sin el permiso explícito de su propietario.
+```
+git clone https://github.com/Enric-xX/FuzzingLocalBot.git
+```
+```
+cd FuzzingLocalBot
+```
+```
+pip install -r requirements.txt
+```
+### Windows
+
+```
+git clone https://github.com/Enric-xX/FuzzingLocalBot.git
+```
+```
+cd FuzzingLocalBot
+```
+```
+pip install -r requirements.txt
+```
 
 ---
 
-## 📖 Descripción
+## Uso
 
-**Fuzzing Bot** es una herramienta de automatización para pruebas de penetración que permite fuzzear directorios y extensiones en un dominio objetivo.
+### Con interfaz gráfica (Windows)
 
-Combina:
-- **AutoHotkey** → Simulación de interacción humana en el navegador.
-- **Python** → Verificaciones rápidas en paralelo (50 threads).
+- Ejecuta bot.ahk con AutoHotkey
+
+- Selecciona el navegador
+
+- Introduce el dominio objetivo (ej: https://ejemplo.com)
+
+- Haz clic en INICIAR FUZZING
+
+### Desde terminal (Linux / Windows)
+
+```
+python fuzzingbot.py https://ejemplo.com extensiones.txt resultados.txt
+```
 
 ---
 
-## ⚡ Características
+## ¿Qué hace?
 
-- 🔥 **Carga automática** de `extensiones.txt` con miles de rutas (diccionario de 18k líneas).
-- 🧠 **Simulación humana** en el navegador (escritura por teclado).
-- 🚀 **Verificación en paralelo** con Python (50 threads).
-- 📂 **Resultados** en TXT y JSON.
-- 🎨 **Interfaz gráfica** para seleccionar navegador y dominio.
-- 🔒 **Aviso de VPN** en la terminal para proteger tu privacidad.
-- 📊 **Progreso en tiempo real** durante la ejecución.
+- Fuzzing → Escanea 42.000 rutas contra el dominio objetivo con 50 threads en paralelo
+
+- Análisis → Detecta tecnologías (WordPress, Apache, PHP...), directory listing, backups expuestos, configuraciones, Git expuesto y más
+
+- Reporte → Genera un informe profesional en Markdown y HTML con los hallazgos clasificados por gravedad
+
+---
+
+## Clasificación de hallazgos
+
+| Nivel | Qué Detecta |
+|-------|-------------|
+| Crítico | Directory listing, PHP info expuesto, SQL dumps, Git expuesto |
+| Alto | Backups, archivos de configuración, errores de servidor |
+| Medio | 403 Forbidden, 401 Unauthorized, error disclosure |
+| Bajo | Redirecciones a login |
+| Info | Tecnologías detectadas, fingerprints |
+
+---
+
+## Estructura
+
+FuzzingLocalBot/
+├── LICENSE                 Licencia GPL v3
+├── README.md               Este archivo
+├── config.ini              Configuración
+├── requirements.txt        Dependencias Python
+├── extensiones.txt         Diccionario de 42k rutas
+├── fuzzingbot.py           Motor principal de fuzzing
+├── analyzer.py             Analizador de respuestas HTTP
+├── reporter.py             Generador de informes
+├── bot.ahk                 Interfaz gráfica (AutoHotkey)
+└── output/                 Carpeta de resultados
+    ├── scan_*.txt           Resultados brutos
+    ├── scan_*.json          Resultados en JSON
+    ├── report_*.md          Informe en Markdown
+    └── report_*.html        Informe en HTML
+
+---
+
+## Aviso de seguridad
+
+### USA UNA VPN ANTES DE EJECUTAR ESTA HERRAMIENTA.
+
+Esta herramienta es exclusivamente para pentesting autorizado. No la uses contra sistemas sin el permiso explícito de su propietario.
+
+---
+
+## Licencia
+
+GNU General Public License v3.0 - Ver [LICENSE](https://github.com/Enric-xX/FuzzingLocalBot/blob/main/LICENSE)
+
+---
+
+## Autor
+
+### Enric-xX
+
+GitHub: [@Enric-xX](https://github.com/Enric-xX)
+
+
+
