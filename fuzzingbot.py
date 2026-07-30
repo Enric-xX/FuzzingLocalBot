@@ -7,9 +7,12 @@ import time
 import json
 import signal
 import threading
+import urllib3
 from datetime import datetime
 from urllib.parse import urljoin
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 try:
     import requests
@@ -60,22 +63,22 @@ def mostrar_banner():
 ║   ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚═╝╚═╝  ╚═══╝ ╚═════╝   ║
 ║                                                              ║
 ╠══════════════════════════════════════════════════════════════╣
-║  🔒 RECOMENDACIÓN: USA UNA VPN ANTES DE EJECUTAR ESTO      ║
-║  ⚠️  Solo para pentesting autorizado                        ║
+║  RECOMENDACION: USA UNA VPN ANTES DE EJECUTAR ESTO          ║
+║  Solo para pentesting autorizado                            ║
 ╚══════════════════════════════════════════════════════════════╝
 """)
 
 def mostrar_ayuda():
     print("""
-Uso: python fuzz_backend.py <dominio> <extensiones.txt> <resultados.txt>
+Uso: python fuzzingbot.py <dominio> <extensiones.txt> <resultados.txt>
 
 Ejemplo:
-    python fuzz_backend.py https://ejemplo.com extensiones.txt resultados.txt
+    python fuzzingbot.py https://ejemplo.com extensiones.txt resultados.txt
 
-Parámetros:
-    dominio        - URL objetivo (ej: https://ejemplo.com)
+Parametros:
+    dominio         - URL objetivo (ej: https://ejemplo.com)
     extensiones.txt - Archivo con directorios y extensiones
-    resultados.txt  - Archivo donde se guardarán los resultados
+    resultados.txt  - Archivo donde se guardaran los resultados
 """)
 
 # ============================================================
@@ -137,7 +140,9 @@ def probar_url(url, timeout=TIMEOUT):
                 "content_type": response.headers.get("Content-Type", ""),
                 "content_length": len(response.content),
                 "redirect": response.url if response.history else None,
-                "exists": response.status_code < 400
+                "exists": response.status_code < 400,
+                "content": response.text[:5000],
+                "headers": dict(response.headers)
             }
         except requests.exceptions.Timeout:
             if intento < MAX_RETRIES:
@@ -163,7 +168,7 @@ def mostrar_progreso_periodico(total, encontrados, inicio):
             velocidad = encontrados / elapsed
             restante = total - encontrados
             estimado = restante / (velocidad + 0.001) if velocidad > 0 else 0
-            log(f"📊 Progreso: {encontrados}/{total} | Vel: {velocidad:.1f}/s | Est: {estimado:.0f}s")
+            log(f"Progreso: {encontrados}/{total} | Vel: {velocidad:.1f}/s | Est: {estimado:.0f}s")
 
 # ============================================================
 # MAIN
@@ -171,7 +176,7 @@ def mostrar_progreso_periodico(total, encontrados, inicio):
 def main():
     global ENCONTRADOS, TOTAL, INICIO
     
-    # Mostrar banner y recomendación
+    # Mostrar banner y recomendacion
     mostrar_banner()
     
     # Verificar argumentos
@@ -222,7 +227,7 @@ def main():
                 ENCONTRADOS += 1
                 with open(results_file, "a", encoding="utf-8") as f:
                     f.write(f"[{resultado['status']}] {resultado['url']}\n")
-                log(f"✅ ENCONTRADO: {resultado['status']} {resultado['url']}")
+                log(f"ENCONTRADO: {resultado['status']} {resultado['url']}")
             
             # Progreso cada 100
             if i % 100 == 0:
@@ -236,7 +241,7 @@ def main():
     # Resumen final
     elapsed = time.time() - INICIO
     log("=" * 50)
-    log(f"✅ COMPLETADO")
+    log(f"COMPLETADO")
     log(f"   Total rutas: {TOTAL}")
     log(f"   Encontradas: {ENCONTRADOS}")
     log(f"   Tiempo: {elapsed:.1f}s")
@@ -244,6 +249,49 @@ def main():
     log(f"   Resultados: {results_file}")
     log(f"   JSON: {json_file}")
     log("=" * 50)
+    
+    # ============================================================
+    # ANALISIS Y REPORTE
+    # ============================================================
+    try:
+        from analyzer import Analyzer
+        from reporter import Reporter
+        
+        log("\nAnalizando resultados...")
+        analyzer = Analyzer()
+        
+        # Establecer baseline (longitud de la pagina de error generica)
+        if resultados:
+            lengths = [r.get("content_length", 0) for r in resultados if r.get("status") == 200]
+            if lengths:
+                baseline = max(set(lengths), key=lengths.count)
+                analyzer.set_baseline(baseline)
+        
+        # Analizar cada resultado
+        for r in resultados:
+            if r.get("exists", False) or r.get("status") in [401, 403, 500]:
+                analyzer.analyze(r)
+        
+        # Generar reportes
+        log("Generando reportes...")
+        reporter = Reporter(dominio, analyzer)
+        
+        md_file = reporter.save_markdown(TOTAL, elapsed, output_dir="output")
+        html_file = reporter.save_html(TOTAL, elapsed, output_dir="output")
+        
+        summary = analyzer.get_summary()
+        log(f"   Criticos: {summary['critical']}")
+        log(f"   Altos: {summary['high']}")
+        log(f"   Medios: {summary['medium']}")
+        log(f"   Bajos: {summary['low']}")
+        log(f"   Info: {summary['info']}")
+        log(f"   Reporte MD: {md_file}")
+        log(f"   Reporte HTML: {html_file}")
+        
+    except ImportError:
+        log("analyzer.py o reporter.py no encontrados. Reportes no generados.")
+    except Exception as e:
+        log(f"Error generando reportes: {e}")
 
 if __name__ == "__main__":
     try:
