@@ -2,10 +2,11 @@
 
 Automation of directory and extension fuzzing, featuring intelligent analysis and professional reporting for authorized penetration testing.
 
-![Linux](https://img.shields.io/badge/Linux-orange)
+![Linux](https://img.shields.io/badge/Linux-purple)
 ![Windows](https://img.shields.io/badge/Windows-blue)
-![Python](https://img.shields.io/badge/Python-3.6+-yellow)
+![Git](https://img.shields.io/badge/Git-orange)
 ![License](https://img.shields.io/badge/License-GPL%20v3-red)
+![Python](https://img.shields.io/badge/Python-3.6+-yellow)
 ![AutoHotKey](https://img.shields.io/badge/AutoHotkey-1.1+-green)
 
 ---
@@ -22,6 +23,7 @@ Before installing, you need to have installed:
 | Program | Download | Is it required?|
 |----------|----------|---------------|
 | **Python 3.6+** | [python.org/downloads](https://www.python.org/downloads/) | ✅ Yes |
+| **Git** | [git-scm.com/install/windows](https://git-scm.com/install/windows) | ✅ Yes |
 | **AutoHotkey 1.1+** | [autohotkey.com/download](https://www.autohotkey.com/download/) | ⚠️ Only for GUI (Windows) |
 
 ---
