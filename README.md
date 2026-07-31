@@ -126,7 +126,7 @@ python fuzzingbot.py https://ejemplo.com extensiones.txt resultados.txt
 
 ---
 
-## Estructura
+## Directory Structure
 
 ```
 FuzzingLocalBot/
