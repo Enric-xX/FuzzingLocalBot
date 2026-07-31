@@ -1,4 +1,4 @@
-# FuzzingLocalBot v2.0
+# FuzzingLocalBot v2.1
 
 Automation of directory and extension fuzzing, featuring intelligent analysis and professional reporting for authorized penetration testing.
 
@@ -80,6 +80,37 @@ python fuzzingbot.py https://ejemplo.com extensiones.txt resultados.txt
 - Analysis → Detects technologies (WordPress, Apache, PHP...), directory listing, exposed backups, configurations, exposed Git, and more
 
 - Reporting → Generates a professional Markdown and HTML report with findings classified by severity
+
+---
+
+## Features
+
+- 42k lines wordlist included
+
+- Configurable scan speed: Slow (10 threads, stealth), Normal (50 threads), Fast (100 threads), or Custom
+
+- Stealth mode: Random delays between requests to evade detection
+
+- User-Agent rotation: 6 different User-Agents to avoid fingerprinting
+
+- Response analyzer: Detects technologies and classifies findings by severity
+
+- Professional reports: Generates Markdown and HTML reports
+
+- Technologies fingerprinting: WordPress, Apache, Nginx, PHP, Laravel, Django, and more
+
+- GUI for Windows: AutoHotkey interface for easy use
+
+---
+
+## Scan Modes
+
+| Mode | Threads | User-Agent | Delay | Use Case |
+|------|---------|------------|-------|----------|
+| Slow | 10 | Rotating (6) | 1-3s | Stealth, evading WAF/IDS |
+| Normal | 50 | Rotating (6) | 0.5-1s | Balanced pentesting |
+| Fast | 100 | Rotating (6) | None | CTFs, authorized speed tests |
+| Custom | Any | Rotating (6) | Configurable | Full control
 
 ---
 
