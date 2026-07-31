@@ -70,7 +70,7 @@ pip install -r requirements.txt
 ### From terminal (Linux / Windows)
 
 ```
-python fuzzingbot.py https://ejemplo.com extensiones.txt resultados.txt
+python fuzzingbot.py
 ```
 
 ---
