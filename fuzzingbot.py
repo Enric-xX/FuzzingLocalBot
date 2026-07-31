@@ -89,15 +89,14 @@ def show_banner():
 
 def show_help():
     print("""
-Usage: python fuzzingbot.py <domain> <wordlist.txt> <results.txt>
+Usage: python fuzzingbot.py <domain> <wordlist> <results>
 
 Example:
-    python fuzzingbot.py https://example.com wordlist.txt results.txt
+    python fuzzingbot.py https://example.com wordlists/top.txt output/results.txt
+    python fuzzingbot.py https://example.com wordlists/wp-fuzz.txt output/results.txt
+    python fuzzingbot.py https://example.com extensiones.txt output/results.txt
 
-Parameters:
-    domain      - Target URL (e.g. https://example.com)
-    wordlist.txt - File with directories and extensions
-    results.txt  - File where results will be saved
+The tool will ask you to select a wordlist if you run it without one.
 """)
 
 def configure_scan():
@@ -141,6 +140,46 @@ def configure_scan():
         log(f"Stealth mode enabled ({STEALTH_SPEED})")
     
     return threads
+
+def select_wordlist():
+    """Show available wordlists and let user pick one."""
+    wordlist_dir = "wordlists"
+    
+    # Also show extensiones.txt in root
+    all_wordlists = []
+    
+    # Check root folder
+    if os.path.exists("extensiones.txt"):
+        all_wordlists.append("extensiones.txt (42k full scan)")
+    
+    # Check wordlists folder
+    if os.path.exists(wordlist_dir):
+        files = sorted([f for f in os.listdir(wordlist_dir) if f.endswith(".txt")])
+        for f in files:
+            all_wordlists.append(f"{wordlist_dir}/{f}")
+    
+    if not all_wordlists:
+        log("No wordlists found. Using extensiones.txt")
+        return "extensiones.txt"
+    
+    print(f"\n[*] Available wordlists:\n")
+    for wl in all_wordlists:
+        print(f"    {wl}")
+    
+    print(f"\n[*] Type the filename (Enter=extensiones.txt):")
+    choice = input("> ").strip()
+    
+    if choice == "":
+        return "extensiones.txt"
+    
+    # Check if choice matches any available wordlist
+    for wl in all_wordlists:
+        if choice in wl:
+            # Return the full path (without the description)
+            return wl.split(" ")[0]
+    
+    log(f"'{choice}' not found. Using extensiones.txt")
+    return "extensiones.txt"
 
 # ============================================================
 # LOAD WORDLIST
@@ -245,13 +284,21 @@ def main():
     
     show_banner()
     
+    # If not enough arguments, ask for wordlist selection
     if len(sys.argv) < 4:
-        show_help()
-        sys.exit(1)
-    
-    domain = sys.argv[1]
-    wordlist_file = sys.argv[2]
-    results_file = sys.argv[3]
+        domain = input("[*] Target domain (e.g. https://example.com): ").strip()
+        if not domain:
+            log("ERROR: No domain provided.")
+            sys.exit(1)
+        if not domain.startswith("http"):
+            domain = "https://" + domain
+        
+        wordlist_file = select_wordlist()
+        results_file = f"output/scan_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+    else:
+        domain = sys.argv[1]
+        wordlist_file = sys.argv[2]
+        results_file = sys.argv[3]
     
     log(f"Starting backend for {domain}")
     
