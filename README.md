@@ -73,6 +73,14 @@ pip install -r requirements.txt
 python fuzzingbot.py
 ```
 
+## Update repository
+
+```
+cd FuzzingLocalBot
+```
+```
+git pull
+```
 ---
 
 ## What does it do?
@@ -176,6 +184,14 @@ This tool is exclusively for authorized pentesting. Do not use it against system
 ## License
 
 GNU General Public License v3.0 - See [LICENSE](https://github.com/Enric-xX/FuzzingLocalBot/blob/main/LICENSE)
+
+---
+
+## Credits
+
+### Wordlists
+
+The wordlists in this project come from the following open source repositories, to see that vsit the [CREDITS.md](https://github.com/Enric-xX/FuzzingLocalBot/edit/main/CREDITS.md)
 
 ---
 
