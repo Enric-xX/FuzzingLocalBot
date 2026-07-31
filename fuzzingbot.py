@@ -32,6 +32,8 @@ THREADS = 50
 LOCK = threading.Lock()
 START_TIME = time.time()
 LAST_UPDATE = time.time()
+SCAN_RESULTS = []  # Store results globally for Ctrl+C handling
+CURRENT_RESULTS_FILE = ""
 
 # User-Agents for rotation
 USER_AGENTS = [
@@ -67,7 +69,7 @@ def show_progress():
     elapsed = time.time() - START_TIME
     if elapsed > 0 and TOTAL > 0:
         speed = FOUND / elapsed
-        eta = (TOTAL - FOUND) / (speed + 0.001)
+        eta = (TOTAL - FOUND) / (speed + 0.001) if speed > 0 else 0
         log(f"Progress: {FOUND}/{TOTAL} found | Speed: {speed:.1f}/s | ETA: {eta:.0f}s")
 
 def show_banner():
@@ -82,9 +84,9 @@ def show_banner():
 ║  ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝╚═════╝  ╚═════╝    ╚═╝      ║
 ║                                                                                                         ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-                    ║  RECOMMENDATION: USE A VPN BEFORE RUNNING THIS              ║
-                    ║  Only for authorized pentesting                             ║
-                    ╚═════════════════════════════════════════════════════════════╝
+║  RECOMMENDATION: USE A VPN BEFORE RUNNING THIS                                                         ║
+║  Only for authorized pentesting                                                                        ║
+╚═════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 """)
 
 def configure_scan():
@@ -169,43 +171,26 @@ def select_wordlist():
     return all_wordlists[0]
 
 # ============================================================
-# LOAD WORDLIST
+# LOAD WORDLIST (FIXED - treats all lines as standalone routes)
 # ============================================================
 def load_wordlist(filepath):
-    directories = []
-    extensions = []
+    """Load wordlist treating all lines as complete routes."""
+    standalone = []
     
     if not os.path.exists(filepath):
         log(f"ERROR: File {filepath} not found.")
-        return [], []
+        return []
     
     log(f"Loading {filepath}...")
     
     with open(filepath, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            
-            if "." in line and "/" not in line and "\\" not in line:
-                if not line.startswith("*"):
-                    extensions.append(line)
-            else:
-                directories.append(line)
+            if line and not line.startswith("#"):
+                standalone.append(line)
     
-    log(f"Loaded: {len(directories)} directories, {len(extensions)} extensions")
-    return directories, extensions
-
-def generate_routes(directories, extensions):
-    if directories and extensions:
-        total = len(directories) * len(extensions)
-        log(f"Generating {total} combinations...")
-        return [d + e for d in directories for e in extensions]
-    elif directories:
-        return directories.copy()
-    elif extensions:
-        return extensions.copy()
-    return []
+    log(f"Loaded: {len(standalone)} routes")
+    return standalone
 
 # ============================================================
 # TEST URL
@@ -260,13 +245,78 @@ def show_periodic_progress(total, found, start_time):
             speed = found / elapsed
             remaining = total - found
             eta = remaining / (speed + 0.001) if speed > 0 else 0
-            log(f"Progress: {found}/{total} | Speed: {speed:.1f}/s | ETA: {eta:.0f}s")
+            log(f"Progress: {found}/{total} found | Speed: {speed:.1f}/s | ETA: {eta:.0f}s")
+
+# ============================================================
+# SAVE REPORT ON INTERRUPT
+# ============================================================
+def save_interrupt_report():
+    """Generate report with current results when Ctrl+C is pressed."""
+    global SCAN_RESULTS, CURRENT_RESULTS_FILE
+    
+    if not SCAN_RESULTS:
+        log("\nNo results to save.")
+        return
+    
+    log("\nGenerating report with current results...")
+    
+    try:
+        from analyzer import Analyzer
+        from reporter import Reporter
+        
+        analyzer = Analyzer()
+        
+        lengths = [r.get("content_length", 0) for r in SCAN_RESULTS if r.get("status") == 200]
+        if lengths:
+            baseline = max(set(lengths), key=lengths.count)
+            analyzer.set_baseline(baseline)
+        
+        for r in SCAN_RESULTS:
+            if r.get("exists", False) or r.get("status") in [401, 403, 500]:
+                analyzer.analyze(r)
+        
+        # Extract domain from first result
+        domain = "unknown"
+        if SCAN_RESULTS:
+            first_url = SCAN_RESULTS[0].get("url", "")
+            if "://" in first_url:
+                domain = first_url.split("://")[1].split("/")[0]
+        
+        reporter = Reporter(domain, analyzer)
+        elapsed = time.time() - START_TIME
+        found_count = sum(1 for r in SCAN_RESULTS if r.get("exists", False))
+        
+        md_file = reporter.save_markdown(found_count, elapsed, output_dir="output")
+        html_file = reporter.save_html(found_count, elapsed, output_dir="output")
+        
+        summary = analyzer.get_summary()
+        log(f"   Critical: {summary['critical']}")
+        log(f"   High: {summary['high']}")
+        log(f"   Medium: {summary['medium']}")
+        log(f"   Low: {summary['low']}")
+        log(f"   Info: {summary['info']}")
+        log(f"   MD Report: {md_file}")
+        log(f"   HTML Report: {html_file}")
+        log("Report saved successfully!")
+        
+    except Exception as e:
+        log(f"Could not generate report: {e}")
+
+def signal_handler(sig, frame):
+    """Handle Ctrl+C gracefully."""
+    print("\n")
+    log("Interrupted by user. Saving results...")
+    save_interrupt_report()
+    sys.exit(0)
 
 # ============================================================
 # MAIN
 # ============================================================
 def main():
-    global FOUND, TOTAL, START_TIME, THREADS
+    global FOUND, TOTAL, START_TIME, THREADS, SCAN_RESULTS, CURRENT_RESULTS_FILE
+    
+    # Set up Ctrl+C handler
+    signal.signal(signal.SIGINT, signal_handler)
     
     show_banner()
     
@@ -279,30 +329,24 @@ def main():
         domain = "https://" + domain
     
     wordlist_file = select_wordlist()
-    results_file = f"output/scan_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+    CURRENT_RESULTS_FILE = f"output/scan_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
     
-    log(f"Starting backend for {domain}")
+    log(f"Starting scan for {domain}")
     
     # Configure scan speed
     THREADS = configure_scan()
     log(f"Using {THREADS} threads")
     
-    directories, extensions = load_wordlist(wordlist_file)
-    if not directories and not extensions:
-        log("ERROR: Could not load directories or extensions.")
+    routes = load_wordlist(wordlist_file)
+    if not routes:
+        log("ERROR: Could not load wordlist.")
         sys.exit(1)
     
-    routes = generate_routes(directories, extensions)
     TOTAL = len(routes)
-    
-    if TOTAL == 0:
-        log("ERROR: No routes generated.")
-        sys.exit(1)
-    
     log(f"Total routes to test: {TOTAL}")
     
     START_TIME = time.time()
-    results = []
+    SCAN_RESULTS = []
     FOUND = 0
     progress_thread = threading.Thread(target=show_periodic_progress, args=(TOTAL, FOUND, START_TIME), daemon=True)
     progress_thread.start()
@@ -314,20 +358,21 @@ def main():
         
         for i, future in enumerate(as_completed(futures), 1):
             result = future.result()
-            results.append(result)
+            SCAN_RESULTS.append(result)
             
             if result.get("exists", False):
                 FOUND += 1
-                with open(results_file, "a", encoding="utf-8") as f:
+                with open(CURRENT_RESULTS_FILE, "a", encoding="utf-8") as f:
                     f.write(f"[{result['status']}] {result['url']}\n")
                 log(f"FOUND: {result['status']} {result['url']}")
             
             if i % 100 == 0:
                 show_progress()
     
-    json_file = results_file.replace(".txt", ".json")
+    # Save JSON
+    json_file = CURRENT_RESULTS_FILE.replace(".txt", ".json")
     with open(json_file, "w", encoding="utf-8") as f:
-        json.dump(results, f, ensure_ascii=False, indent=2)
+        json.dump(SCAN_RESULTS, f, ensure_ascii=False, indent=2)
     
     elapsed = time.time() - START_TIME
     log("=" * 50)
@@ -336,53 +381,15 @@ def main():
     log(f"   Found: {FOUND}")
     log(f"   Time: {elapsed:.1f}s")
     log(f"   Speed: {TOTAL/elapsed:.1f} routes/s")
-    log(f"   Results: {results_file}")
+    log(f"   Results: {CURRENT_RESULTS_FILE}")
     log(f"   JSON: {json_file}")
     log("=" * 50)
     
-    # ============================================================
-    # ANALYSIS AND REPORT
-    # ============================================================
-    try:
-        from analyzer import Analyzer
-        from reporter import Reporter
-        
-        log("\nAnalyzing results...")
-        analyzer = Analyzer()
-        
-        if results:
-            lengths = [r.get("content_length", 0) for r in results if r.get("status") == 200]
-            if lengths:
-                baseline = max(set(lengths), key=lengths.count)
-                analyzer.set_baseline(baseline)
-        
-        for r in results:
-            if r.get("exists", False) or r.get("status") in [401, 403, 500]:
-                analyzer.analyze(r)
-        
-        log("Generating reports...")
-        reporter = Reporter(domain, analyzer)
-        
-        md_file = reporter.save_markdown(TOTAL, elapsed, output_dir="output")
-        html_file = reporter.save_html(TOTAL, elapsed, output_dir="output")
-        
-        summary = analyzer.get_summary()
-        log(f"   Critical: {summary['critical']}")
-        log(f"   High: {summary['high']}")
-        log(f"   Medium: {summary['medium']}")
-        log(f"   Low: {summary['low']}")
-        log(f"   Info: {summary['info']}")
-        log(f"   MD Report: {md_file}")
-        log(f"   HTML Report: {html_file}")
-        
-    except ImportError:
-        log("analyzer.py or reporter.py not found. Reports not generated.")
-    except Exception as e:
-        log(f"Error generating reports: {e}")
+    # Generate reports
+    save_interrupt_report()
 
 if __name__ == "__main__":
     try:
-        signal.signal(signal.SIGINT, lambda s, f: sys.exit(0))
         main()
     except KeyboardInterrupt:
         log("Interrupted by user.")
