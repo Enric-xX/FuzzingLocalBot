@@ -130,13 +130,13 @@ def configure_scan():
     return threads
 
 def select_wordlist():
-    """Show available wordlists and let user pick one."""
+    """Show available wordlists and let user pick one by number."""
     wordlist_dir = "dictionaries" if os.path.exists("dictionaries") else "wordlists"
     
     all_wordlists = []
     
     if os.path.exists("extensiones.txt"):
-        all_wordlists.append("extensiones.txt (42k full scan)")
+        all_wordlists.append("extensiones.txt")
     
     if os.path.exists(wordlist_dir):
         files = sorted([f for f in os.listdir(wordlist_dir) if f.endswith(".txt")])
@@ -148,21 +148,25 @@ def select_wordlist():
         return "extensiones.txt"
     
     print(f"\n[*] Available wordlists:\n")
-    for wl in all_wordlists:
-        print(f"    {wl}")
+    for i, wl in enumerate(all_wordlists, 1):
+        display = wl.replace("dictionaries/", "").replace("wordlists/", "")
+        print(f"    {i}. {display}")
     
-    print(f"\n[*] Type the filename (Enter=extensiones.txt):")
+    print(f"\n[*] Choose a number (Enter=1):")
     choice = input("> ").strip()
     
     if choice == "":
-        return "extensiones.txt"
+        return all_wordlists[0]
     
-    for wl in all_wordlists:
-        if choice in wl:
-            return wl.split(" ")[0]
+    try:
+        index = int(choice) - 1
+        if 0 <= index < len(all_wordlists):
+            return all_wordlists[index]
+    except:
+        pass
     
-    log(f"'{choice}' not found. Using extensiones.txt")
-    return "extensiones.txt"
+    log(f"Invalid choice. Using {all_wordlists[0]}")
+    return all_wordlists[0]
 
 # ============================================================
 # LOAD WORDLIST
