@@ -70,6 +70,9 @@ pip install -r requirements.txt
 ### From terminal (Linux / Windows)
 
 ```
+cd FuzzingLocalBot
+```
+```
 python fuzzingbot.py
 ```
 
@@ -87,31 +90,24 @@ git pull
 
 ## What does it do?
 
-- Fuzzing → Scans 42,000 paths against the target domain using 50 parallel threads
-
-- Analysis → Detects technologies (WordPress, Apache, PHP...), directory listing, exposed backups, configurations, exposed Git, and more
-
-- Reporting → Generates a professional Markdown and HTML report with findings classified by severity
+1. **Fuzzing** → Scans routes against the target domain with configurable threads (10-200)
+2. **Wordlist selection** → Choose from 15 curated dictionaries (APIs, WordPress, Jira, LFI, etc.)
+3. **Analysis** → Detects technologies (WordPress, Apache, PHP...), directory listing, exposed backups, config files, Git exposed, and more
+4. **Report** → Generates a professional report in Markdown and HTML with findings classified by severity
 
 ---
 
 ## Features
 
-- 42k lines wordlist included
-
-- Configurable scan speed: Slow (10 threads, stealth), Normal (50 threads), Fast (100 threads), or Custom
-
-- Stealth mode: Random delays between requests to evade detection
-
-- User-Agent rotation: 6 different User-Agents to avoid fingerprinting
-
-- Response analyzer: Detects technologies and classifies findings by severity
-
-- Professional reports: Generates Markdown and HTML reports
-
-- Technologies fingerprinting: WordPress, Apache, Nginx, PHP, Laravel, Django, and more
-
-- GUI for Windows: AutoHotkey interface for easy use
+- **15 curated dictionaries**: General, APIs, WordPress, Jira, Path Traversal, IIS, and more
+- **Interactive wordlist selector**: Browse and choose from available dictionaries
+- **42k lines full scan dictionary** included
+- **Configurable scan speed**: Slow (10 threads, stealth), Normal (50 threads), Fast (100 threads), or Custom
+- **Stealth mode**: Random delays between requests to evade detection
+- **User-Agent rotation**: 6 different User-Agents to avoid fingerprinting
+- **Response analyzer**: Detects technologies and classifies findings by severity
+- **Professional reports**: Generates Markdown and HTML reports
+- **Technologies fingerprinting**: WordPress, Apache, Nginx, PHP, Laravel, Django, and more
 
 ---
 
