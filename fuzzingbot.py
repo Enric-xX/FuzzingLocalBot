@@ -24,11 +24,11 @@ except ImportError:
 # CONFIGURATION
 # ============================================================
 TIMEOUT = 3
-THREADS = 50
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 MAX_RETRIES = 2
 FOUND = 0
 TOTAL = 0
+THREADS = 50
 LOCK = threading.Lock()
 START_TIME = time.time()
 LAST_UPDATE = time.time()
@@ -80,6 +80,31 @@ Parameters:
     wordlist.txt - File with directories and extensions
     results.txt  - File where results will be saved
 """)
+
+def configure_scan():
+    """Ask user for scan speed and return thread count."""
+    print("\n[*] Select scan speed:")
+    print("    1. Slow (10 threads, stealth)")
+    print("    2. Normal (50 threads)")
+    print("    3. Fast (100 threads)")
+    print("    4. Custom")
+    
+    choice = input("\n[*] Choose (1-4, Enter=2): ").strip() or "2"
+    
+    if choice == "1":
+        return 10
+    elif choice == "2":
+        return 50
+    elif choice == "3":
+        return 100
+    elif choice == "4":
+        try:
+            custom = int(input("[*] Number of threads: "))
+            return max(1, min(200, custom))
+        except:
+            return 50
+    else:
+        return 50
 
 # ============================================================
 # LOAD WORDLIST
@@ -174,7 +199,7 @@ def show_periodic_progress(total, found, start_time):
 # MAIN
 # ============================================================
 def main():
-    global FOUND, TOTAL, START_TIME
+    global FOUND, TOTAL, START_TIME, THREADS
     
     show_banner()
     
@@ -187,6 +212,10 @@ def main():
     results_file = sys.argv[3]
     
     log(f"Starting backend for {domain}")
+    
+    # Configure scan speed
+    THREADS = configure_scan()
+    log(f"Using {THREADS} threads")
     
     directories, extensions = load_wordlist(wordlist_file)
     if not directories and not extensions:
