@@ -131,7 +131,7 @@ def configure_scan():
 
 def select_wordlist():
     """Show available wordlists and let user pick one."""
-    wordlist_dir = "wordlists"
+    wordlist_dir = "dictionaries" if os.path.exists("dictionaries") else "wordlists"
     
     all_wordlists = []
     
