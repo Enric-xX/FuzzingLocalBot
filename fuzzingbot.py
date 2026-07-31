@@ -32,7 +32,7 @@ THREADS = 50
 LOCK = threading.Lock()
 START_TIME = time.time()
 LAST_UPDATE = time.time()
-SCAN_RESULTS = []  # Store results globally for Ctrl+C handling
+SCAN_RESULTS = []
 CURRENT_RESULTS_FILE = ""
 
 # User-Agents for rotation
@@ -171,7 +171,7 @@ def select_wordlist():
     return all_wordlists[0]
 
 # ============================================================
-# LOAD WORDLIST (FIXED - treats all lines as standalone routes)
+# LOAD WORDLIST
 # ============================================================
 def load_wordlist(filepath):
     """Load wordlist treating all lines as complete routes."""
@@ -275,7 +275,6 @@ def save_interrupt_report():
             if r.get("exists", False) or r.get("status") in [401, 403, 500]:
                 analyzer.analyze(r)
         
-        # Extract domain from first result
         domain = "unknown"
         if SCAN_RESULTS:
             first_url = SCAN_RESULTS[0].get("url", "")
@@ -302,6 +301,9 @@ def save_interrupt_report():
     except Exception as e:
         log(f"Could not generate report: {e}")
 
+# ============================================================
+# CTRL+C HANDLER
+# ============================================================
 def signal_handler(sig, frame):
     """Handle Ctrl+C gracefully."""
     print("\n")
@@ -315,12 +317,10 @@ def signal_handler(sig, frame):
 def main():
     global FOUND, TOTAL, START_TIME, THREADS, SCAN_RESULTS, CURRENT_RESULTS_FILE
     
-    # Set up Ctrl+C handler
     signal.signal(signal.SIGINT, signal_handler)
     
     show_banner()
     
-    # Interactive mode
     domain = input("[*] Target domain (e.g. https://example.com): ").strip()
     if not domain:
         log("ERROR: No domain provided.")
@@ -333,7 +333,6 @@ def main():
     
     log(f"Starting scan for {domain}")
     
-    # Configure scan speed
     THREADS = configure_scan()
     log(f"Using {THREADS} threads")
     
@@ -369,7 +368,6 @@ def main():
             if i % 100 == 0:
                 show_progress()
     
-    # Save JSON
     json_file = CURRENT_RESULTS_FILE.replace(".txt", ".json")
     with open(json_file, "w", encoding="utf-8") as f:
         json.dump(SCAN_RESULTS, f, ensure_ascii=False, indent=2)
@@ -385,7 +383,6 @@ def main():
     log(f"   JSON: {json_file}")
     log("=" * 50)
     
-    # Generate reports
     save_interrupt_report()
 
 if __name__ == "__main__":
