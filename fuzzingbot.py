@@ -8,6 +8,7 @@ import json
 import signal
 import threading
 import urllib3
+import random
 from datetime import datetime
 from urllib.parse import urljoin
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -24,7 +25,6 @@ except ImportError:
 # CONFIGURATION
 # ============================================================
 TIMEOUT = 3
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 MAX_RETRIES = 2
 FOUND = 0
 TOTAL = 0
@@ -32,6 +32,25 @@ THREADS = 50
 LOCK = threading.Lock()
 START_TIME = time.time()
 LAST_UPDATE = time.time()
+
+# User-Agents for rotation
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (Linux; Android 13; SM-S908B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+]
+
+# Stealth delays
+STEALTH_DELAYS = {
+    "slow": (1, 3),
+    "normal": (0.5, 1),
+    "fast": (0, 0.5),
+}
+STEALTH_MODE = False
+STEALTH_SPEED = "normal"
 
 # ============================================================
 # UTILITIES
@@ -82,29 +101,46 @@ Parameters:
 """)
 
 def configure_scan():
-    """Ask user for scan speed and return thread count."""
+    """Ask user for scan speed, stealth mode, and return thread count."""
+    global STEALTH_MODE, STEALTH_SPEED
+    
     print("\n[*] Select scan speed:")
     print("    1. Slow (10 threads, stealth)")
-    print("    2. Normal (50 threads)")
+    print("    2. Normal (50 threads, stealth)")
     print("    3. Fast (100 threads)")
     print("    4. Custom")
     
     choice = input("\n[*] Choose (1-4, Enter=2): ").strip() or "2"
     
     if choice == "1":
-        return 10
+        threads = 10
+        STEALTH_MODE = True
+        STEALTH_SPEED = "slow"
     elif choice == "2":
-        return 50
+        threads = 50
+        STEALTH_MODE = True
+        STEALTH_SPEED = "normal"
     elif choice == "3":
-        return 100
+        threads = 100
+        STEALTH_MODE = False
     elif choice == "4":
         try:
             custom = int(input("[*] Number of threads: "))
-            return max(1, min(200, custom))
+            threads = max(1, min(200, custom))
         except:
-            return 50
+            threads = 50
+        stealth = input("[*] Enable stealth mode? (y/n, Enter=n): ").strip().lower()
+        STEALTH_MODE = stealth == "y"
+        if STEALTH_MODE:
+            speed = input("[*] Stealth speed (slow/normal/fast, Enter=normal): ").strip().lower() or "normal"
+            STEALTH_SPEED = speed if speed in STEALTH_DELAYS else "normal"
     else:
-        return 50
+        threads = 50
+    
+    if STEALTH_MODE:
+        log(f"Stealth mode enabled ({STEALTH_SPEED})")
+    
+    return threads
 
 # ============================================================
 # LOAD WORDLIST
@@ -149,7 +185,13 @@ def generate_routes(directories, extensions):
 # TEST URL
 # ============================================================
 def test_url(url, timeout=TIMEOUT):
-    headers = {"User-Agent": USER_AGENT}
+    headers = {"User-Agent": random.choice(USER_AGENTS)}
+    
+    # Stealth delay
+    if STEALTH_MODE:
+        delay_min, delay_max = STEALTH_DELAYS.get(STEALTH_SPEED, (0.5, 1))
+        time.sleep(random.uniform(delay_min, delay_max))
+    
     for attempt in range(MAX_RETRIES + 1):
         try:
             response = requests.get(
