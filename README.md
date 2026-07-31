@@ -23,7 +23,7 @@ Before installing, you need to have installed:
 | Program | Download | Is it required?|
 |----------|----------|---------------|
 | **Python 3.6+** | [python.org/downloads](https://www.python.org/downloads/) | ✅ Yes |
-| **Git** | [git-scm.com/install/windows](https://git-scm.com/install/windows) | ✅ Yes |
+| **Git** | [git-scm.com/install](https://git-scm.com/install) | ✅ Yes |
 | **AutoHotkey 1.1+** | [autohotkey.com/download](https://www.autohotkey.com/download/) | ⚠️ Only for GUI (Windows) |
 
 ---
