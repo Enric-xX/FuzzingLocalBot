@@ -1,4 +1,4 @@
-# FuzzingLocalBot v2.1
+# FuzzingLocalBot v2.2
 
 Automation of directory and extension fuzzing, featuring intelligent analysis and professional reporting for authorized penetration testing.
 
@@ -132,20 +132,36 @@ python fuzzingbot.py https://ejemplo.com extensiones.txt resultados.txt
 
 ```
 FuzzingLocalBot/
-├── LICENSE                 GPL v3 License
-├── README.md               This file
-├── config.ini              Configuration file
-├── requirements.txt        Python dependencies
-├── extensiones.txt         42k paths dictionary
-├── fuzzingbot.py           Main fuzzing engine
-├── analyzer.py             HTTP response analyzer
-├── reporter.py             Report generator
-├── bot.ahk                 Graphical interface (AutoHotkey)
-└── output/                 Results folder
-    ├── scan_*.txt          Raw results
-    ├── scan_*.json         JSON results
-    ├── report_*.md         Markdown report
-    └── report_*.html       HTML report
+├── LICENSE                                                                  GPL v3 License
+├── README.md                                                                This file
+├── CREDITS.md                                                               Wordlist authors credits
+├── config.ini                                                               Configuration file
+├── requirements.txt                                                         Python dependencies
+├── extensiones.txt                                                          42k paths dictionary 
+├── fuzzingbot.py                                                            Main fuzzing engine 
+├── analyzer.py                                                              HTTP response analyzer
+├── reporter.py                                                              Report generator
+├── bot.ahk                                                                  Graphical interface 
+├── dictionaries/                                                            Curated wordlist collection
+│   ├── top.txt                                                              General directories 
+│   ├── api.txt                                                              API endpoints 
+│   ├── wp-fuzz.txt                                                          WordPress paths 
+│   ├── jira-fuzz.txt                                                        Jira/Atlassian paths
+│   ├── JHADDIX_LFI.txt                                                      Path traversal payloads
+│   ├── iis.txt                                                              IIS/Windows paths
+│   ├── extensions.txt                                                       File extensions
+│   ├── common-ms-httpd-log-locations.txt                                    Windows log paths
+│   ├── common-unix-httpd-log-locations.txt                                  Unix log paths
+│   ├── alt-extensions-asp.txt                                               ASP extensions
+│   ├── alt-extensions-jsp.txt                                               JSP extensions
+│   ├── alt-extensions-php.txt                                               PHP extensions
+│   ├── MimeTypes.txt                                                        MIME types
+│   └── param.txt                                                            Parameter names
+└── output/                                                                  Results folder
+    ├── scan_*.txt                                                           Raw results
+    ├── scan_*.json                                                          JSON results
+    ├── report_*.md                                                          Markdown report
+    └── report_*.html                                                        HTML report
 ```
 ---
 
