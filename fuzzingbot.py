@@ -87,18 +87,6 @@ def show_banner():
 ╚══════════════════════════════════════════════════════════════╝
 """)
 
-def show_help():
-    print("""
-Usage: python fuzzingbot.py <domain> <wordlist> <results>
-
-Example:
-    python fuzzingbot.py https://example.com wordlists/top.txt output/results.txt
-    python fuzzingbot.py https://example.com wordlists/wp-fuzz.txt output/results.txt
-    python fuzzingbot.py https://example.com extensiones.txt output/results.txt
-
-The tool will ask you to select a wordlist if you run it without one.
-""")
-
 def configure_scan():
     """Ask user for scan speed, stealth mode, and return thread count."""
     global STEALTH_MODE, STEALTH_SPEED
@@ -145,14 +133,11 @@ def select_wordlist():
     """Show available wordlists and let user pick one."""
     wordlist_dir = "wordlists"
     
-    # Also show extensiones.txt in root
     all_wordlists = []
     
-    # Check root folder
     if os.path.exists("extensiones.txt"):
         all_wordlists.append("extensiones.txt (42k full scan)")
     
-    # Check wordlists folder
     if os.path.exists(wordlist_dir):
         files = sorted([f for f in os.listdir(wordlist_dir) if f.endswith(".txt")])
         for f in files:
@@ -172,10 +157,8 @@ def select_wordlist():
     if choice == "":
         return "extensiones.txt"
     
-    # Check if choice matches any available wordlist
     for wl in all_wordlists:
         if choice in wl:
-            # Return the full path (without the description)
             return wl.split(" ")[0]
     
     log(f"'{choice}' not found. Using extensiones.txt")
@@ -226,7 +209,6 @@ def generate_routes(directories, extensions):
 def test_url(url, timeout=TIMEOUT):
     headers = {"User-Agent": random.choice(USER_AGENTS)}
     
-    # Stealth delay
     if STEALTH_MODE:
         delay_min, delay_max = STEALTH_DELAYS.get(STEALTH_SPEED, (0.5, 1))
         time.sleep(random.uniform(delay_min, delay_max))
@@ -284,21 +266,16 @@ def main():
     
     show_banner()
     
-    # If not enough arguments, ask for wordlist selection
-    if len(sys.argv) < 4:
-        domain = input("[*] Target domain (e.g. https://example.com): ").strip()
-        if not domain:
-            log("ERROR: No domain provided.")
-            sys.exit(1)
-        if not domain.startswith("http"):
-            domain = "https://" + domain
-        
-        wordlist_file = select_wordlist()
-        results_file = f"output/scan_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-    else:
-        domain = sys.argv[1]
-        wordlist_file = sys.argv[2]
-        results_file = sys.argv[3]
+    # Interactive mode
+    domain = input("[*] Target domain (e.g. https://example.com): ").strip()
+    if not domain:
+        log("ERROR: No domain provided.")
+        sys.exit(1)
+    if not domain.startswith("http"):
+        domain = "https://" + domain
+    
+    wordlist_file = select_wordlist()
+    results_file = f"output/scan_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
     
     log(f"Starting backend for {domain}")
     
