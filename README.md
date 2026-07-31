@@ -73,6 +73,8 @@ pip install -r requirements.txt
 python fuzzingbot.py
 ```
 
+---
+
 ## Update repository
 
 ```
