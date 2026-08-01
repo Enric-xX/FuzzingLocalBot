@@ -1,6 +1,5 @@
 ; ============================================================
-; FuzzingLocalBot v3.0 - Windows GUI
-; Minimalist · Professional · Auto-close
+; FuzzingLocalBot Windows GUI
 ; ============================================================
 
 #NoEnv
