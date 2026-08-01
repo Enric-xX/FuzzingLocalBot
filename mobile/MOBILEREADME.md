@@ -3,6 +3,7 @@
 Lightweight web fuzzer for Android devices via Termux.
 
 ![Termux](https://img.shields.io/badge/Termux-green)
+![Git](https://img.shields.io/badge/Git-orange)
 ![Python](https://img.shields.io/badge/Python-3.6+-yellow)
 ![License](https://img.shields.io/badge/License-GPL%20v3-red)
 
