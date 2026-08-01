@@ -4,6 +4,7 @@ Automation of directory and extension fuzzing, featuring intelligent analysis an
 
 ![Linux](https://img.shields.io/badge/Linux-purple)
 ![Windows](https://img.shields.io/badge/Windows-blue)
+![Termux](https://img.shields.io/badge/Termux-green)
 ![Git](https://img.shields.io/badge/Git-orange)
 ![License](https://img.shields.io/badge/License-GPL%20v3-red)
 ![Python](https://img.shields.io/badge/Python-3.6+-yellow)
