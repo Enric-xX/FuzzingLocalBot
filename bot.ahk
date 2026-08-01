@@ -1,6 +1,6 @@
 ; ============================================================
-; FuzzingLocalBot - AutoHotkey Interface
-; Version: 2.0
+; FuzzingLocalBot v3.0 - Windows GUI
+; Minimalist · Professional · Auto-close
 ; ============================================================
 
 #NoEnv
@@ -13,263 +13,425 @@ SendMode, Input
 ; ============================================================
 ; GLOBAL CONFIGURATION
 ; ============================================================
-global ExtensionesFile := A_ScriptDir . "\extensiones.txt"
-global Dominio := ""
-global Navegador := ""
 global PythonScript := A_ScriptDir . "\fuzzingbot.py"
-global Directorios := []
-global Extensiones := []
-global RutasCompletas := []
-global TotalRutas := 0
 global FuzzingActivo := false
+global SelectedWordlist := ""
+global WordlistDir := A_ScriptDir . "\dictionaries"
+global RootWordlist := A_ScriptDir . "\extensiones.txt"
+global ScanPID := 0
+global AppVersion := "3.0.0"
 
 ; ============================================================
-; MAIN MENU
+; COLORS
 ; ============================================================
-FuzzBotMenu:
-    Gui, FuzzBot:Destroy
-    Gui, FuzzBot:New, +AlwaysOnTop, FuzzingLocalBot v2.0
-    Gui, FuzzBot:Color, 0x0d1117
-    Gui, FuzzBot:Font, s10 cWhite, Segoe UI
+global ColorBG := "FFFFFF"
+global ColorPanel := "F8F9FA"
+global ColorAccent := "2563EB"
+global ColorText := "333333"
+global ColorGray := "6B7280"
+global ColorLightGray := "9CA3AF"
+global ColorBorder := "E5E7EB"
+global ColorGreen := "10B981"
+global ColorRed := "EF4444"
 
-    Gui, FuzzBot:Add, Text, x10 y10 w380 h30 Center c00ff41, FUZZINGLOCALBOT v2.0
-    
-    Gui, FuzzBot:Add, Text, x10 y50 w120 h20 c8892b0, Browser:
-    Gui, FuzzBot:Add, DropDownList, x130 y48 w250 vNavSel, Chrome|Edge|Firefox|Brave|Opera
-
-    Gui, FuzzBot:Add, Text, x10 y80 w120 h20 c8892b0, Domain:
-    Gui, FuzzBot:Add, Edit, x130 y78 w250 vDominioInput, https://example.com
-
-    Gui, FuzzBot:Add, Text, x10 y110 w120 h20 c8892b0, Wordlist:
-    Gui, FuzzBot:Add, Edit, x130 y108 w200 vExtFileReadOnly ReadOnly, %ExtensionesFile%
-    Gui, FuzzBot:Add, Button, x335 y108 w45 h20 gSeleccionarExtensiones, ...
-
-    Gui, FuzzBot:Add, Text, x10 y140 w370 h20 c8892b0 vEstadoExtensiones, Status: Loading...
-
-    Gui, FuzzBot:Add, Button, x10 y170 w370 h40 gIniciarFuzzing, START FUZZING
-
-    Gui, FuzzBot:Add, Progress, x10 y220 w370 h20 c00ff41 vBarraProgreso, 0
-
-    Gui, FuzzBot:Add, Text, x10 y250 w370 h30 Center cFF5555 vTextoEstado, Ready to start.
-
-    Gui, FuzzBot:Show, w390 h300
-    Gosub, CargarExtensiones
+; ============================================================
+; STARTUP
+; ============================================================
+Gosub, BuildGUI
 return
 
 ; ============================================================
-; LOAD WORDLIST
+; BUILD GUI
 ; ============================================================
-CargarExtensiones:
-    global ExtensionesFile, Directorios, Extensiones, RutasCompletas, TotalRutas
+BuildGUI:
+    Gui, Main:Destroy
+    Gui, Main:New, +AlwaysOnTop +LabelMain., FuzzingLocalBot v%AppVersion%
+    Gui, Main:Color, %ColorBG%, %ColorPanel%
+    Gui, Main:Font, s9 c%ColorText%, Segoe UI
+
+    ; ============================================================
+    ; HEADER
+    ; ============================================================
+    Gui, Main:Add, Picture, x20 y20 w32 h32, logo.png
+    Gui, Main:Add, Text, x60 y24 w200 h24 c%ColorAccent% vTitleText, FUZZINGLOCALBOT
+    Gui, Main:Font, s7 c%ColorLightGray%
+    Gui, Main:Add, Text, x60 y48 w200 h16, Web Fuzzing Tool v%AppVersion%
+    Gui, Main:Font, s9 c%ColorText%
+
+    ; ============================================================
+    ; TARGET SECTION
+    ; ============================================================
+    Gui, Main:Add, Text, x20 y85 w460 h1 c%ColorBorder% 0x7
+    Gui, Main:Add, Text, x20 y95 w80 h20 c%ColorGray%, TARGET
+    Gui, Main:Add, Edit, x110 y92 w370 h28 vDomainInput gDomainChanged, https://example.com
+
+    ; ============================================================
+    ; SCAN SPEED SECTION
+    ; ============================================================
+    Gui, Main:Add, Text, x20 y135 w460 h1 c%ColorBorder% 0x7
+    Gui, Main:Add, Text, x20 y145 w80 h20 c%ColorGray%, SPEED
+    Gui, Main:Add, Radio, x110 y143 w160 h20 c%ColorText% vSpeedSlow gSpeedChanged, Slow (10 threads)
+    Gui, Main:Add, Radio, x280 y143 w160 h20 c%ColorText% Checked vSpeedNormal gSpeedChanged, Normal (50 threads)
+    Gui, Main:Add, Radio, x110 y165 w160 h20 c%ColorText% vSpeedFast gSpeedChanged, Fast (100 threads)
+    Gui, Main:Add, Radio, x280 y165 w80 h20 c%ColorText% vSpeedCustom gSpeedChanged, Custom
+    Gui, Main:Add, Edit, x340 y163 w40 h20 vCustomThreads Limit3 Number gCustomChanged, 50
+    Gui, Main:Add, UpDown, vThreadUpDown Range1-200, 50
+
+    ; ============================================================
+    ; WORDLIST SECTION
+    ; ============================================================
+    Gui, Main:Add, Text, x20 y200 w460 h1 c%ColorBorder% 0x7
+    Gui, Main:Add, Text, x20 y210 w80 h20 c%ColorGray%, WORDLIST
+    Gui, Main:Add, DropDownList, x110 y207 w280 vWordlistDropDown gWordlistChanged, Loading...
+    Gui, Main:Add, Button, x395 y206 w85 h24 gRefreshWordlists, Refresh
+    Gui, Main:Add, Text, x110 y232 w370 h16 c%ColorLightGray% vWordlistInfo, Select a wordlist
+
+    ; ============================================================
+    ; OPTIONS
+    ; ============================================================
+    Gui, Main:Add, Text, x20 y260 w460 h1 c%ColorBorder% 0x7
+    Gui, Main:Add, Text, x20 y270 w80 h20 c%ColorGray%, OPTIONS
+    Gui, Main:Add, Checkbox, x110 y270 w200 h20 c%ColorText% vStealthCheck gStealthChanged, Stealth mode (random delays)
+    Gui, Main:Add, Checkbox, x110 y290 w200 h20 c%ColorText% vVPNCheck Checked, I am using a VPN
+
+    ; ============================================================
+    ; ACTION BUTTONS
+    ; ============================================================
+    Gui, Main:Add, Text, x20 y325 w460 h1 c%ColorBorder% 0x7
     
-    Directorios := []
-    Extensiones := []
-    RutasCompletas := []
+    Gui, Main:Add, Button, x20 y340 w180 h40 gStartScan vStartBtn, START SCAN
+    Gui, Main:Add, Button, x210 y340 w180 h40 gStopScan vStopBtn Disabled, STOP SCAN
+    Gui, Main:Add, Button, x400 y340 w80 h40 gOpenOutput, Output
+
+    ; ============================================================
+    ; PROGRESS
+    ; ============================================================
+    Gui, Main:Add, Progress, x20 y395 w460 h6 c%ColorAccent% vScanProgress, 0
+    Gui, Main:Add, Text, x20 y408 w460 h20 Center c%ColorGray% vStatusText, Ready
+
+    ; ============================================================
+    ; FOOTER
+    ; ============================================================
+    Gui, Main:Font, s7 c%ColorLightGray%
+    Gui, Main:Add, Text, x20 y435 w460 h16 Center, FuzzingLocalBot v%AppVersion% · Only for authorized pentesting · Use a VPN
+
+    ; ============================================================
+    ; SHOW
+    ; ============================================================
+    Gui, Main:Show, w500 h460
+    Gosub, LoadWordlists
+return
+
+; ============================================================
+; LOAD WORDLISTS
+; ============================================================
+LoadWordlists:
+    GuiControl, Main:, WordlistDropDown, |
     
-    if !FileExist(ExtensionesFile) {
-        GuiControl, FuzzBot:, EstadoExtensiones, Status: extensiones.txt not found
+    If FileExist(RootWordlist) {
+        GuiControl, Main:, WordlistDropDown, extensiones.txt (42,000 routes)
+    }
+    
+    If FileExist(WordlistDir) {
+        Loop, Files, %WordlistDir%\*.txt
+        {
+            GuiControl, Main:, WordlistDropDown, % A_LoopFileName
+        }
+    }
+    
+    GuiControl, Main:, StatusText, Ready · Wordlists loaded
+return
+
+; ============================================================
+; WORDLIST CHANGED
+; ============================================================
+WordlistChanged:
+    Gui, Main:Submit, NoHide
+    SelectedWordlist := WordlistDropDown
+    
+    if (SelectedWordlist = "" || SelectedWordlist = "Loading...") {
         return
     }
     
-    GuiControl, FuzzBot:, EstadoExtensiones, Status: Loading...
-    
-    lineas := []
-    Loop, Read, %ExtensionesFile%
-    {
-        linea := Trim(A_LoopReadLine)
-        if (linea != "" && SubStr(linea, 1, 1) != "#") {
-            lineas.Push(linea)
-        }
-    }
-    
-    for i, linea in lineas {
-        if InStr(linea, ".") && !InStr(linea, "/") && !InStr(linea, "\") {
-            if !InStr(linea, "*") {
-                Extensiones.Push(linea)
-            }
-        } else {
-            Directorios.Push(linea)
-        }
-    }
-    
-    if Directorios.MaxIndex() > 0 && Extensiones.MaxIndex() > 0 {
-        for i, dir in Directorios {
-            for j, ext in Extensiones {
-                RutasCompletas.Push(dir . ext)
-            }
-        }
-    } else if Directorios.MaxIndex() > 0 {
-        RutasCompletas := Directorios.Clone()
+    if InStr(SelectedWordlist, "extensiones.txt") {
+        GuiControl, Main:, WordlistInfo, 42,000 routes · Full scan dictionary
+        SelectedWordlist := RootWordlist
     } else {
-        RutasCompletas := Extensiones.Clone()
-    }
-    
-    TotalRutas := RutasCompletas.MaxIndex()
-    estado := "Status: " . Directorios.MaxIndex() . " dirs + " . Extensiones.MaxIndex() . " ext = " . TotalRutas . " combinations"
-    GuiControl, FuzzBot:, EstadoExtensiones, %estado%
-return
-
-; ============================================================
-; SELECT FILE
-; ============================================================
-SeleccionarExtensiones:
-    FileSelectFile, archivo, 3, , Select wordlist, Text Documents (*.txt)
-    if archivo {
-        ExtensionesFile := archivo
-        GuiControl, FuzzBot:, ExtFileReadOnly, %ExtensionesFile%
-        Gosub, CargarExtensiones
+        wordlistPath := WordlistDir . "\" . SelectedWordlist
+        If FileExist(wordlistPath) {
+            FileRead, content, %wordlistPath%
+            lines := 0
+            Loop, Parse, content, `n, `r
+            {
+                if (A_LoopField != "")
+                    lines++
+            }
+            FileGetSize, size, %wordlistPath%, K
+            GuiControl, Main:, WordlistInfo, %lines% routes · %size% KB
+            SelectedWordlist := wordlistPath
+        }
     }
 return
 
 ; ============================================================
-; START FUZZING
+; DOMAIN CHANGED
 ; ============================================================
-IniciarFuzzing:
-    Gui, FuzzBot:Submit, NoHide
+DomainChanged:
+    Gui, Main:Submit, NoHide
+    if (DomainInput != "" && DomainInput != "https://example.com") {
+        GuiControl, Main:, StatusText, Target set · Ready to scan
+    }
+return
 
-    Dominio := Trim(DominioInput)
-    if !Dominio || Dominio == "https://example.com" {
-        MsgBox, 16, Error, Enter a valid domain.
+; ============================================================
+; SPEED CHANGED
+; ============================================================
+SpeedChanged:
+    Gui, Main:Submit, NoHide
+    if (SpeedCustom) {
+        GuiControl, Main:Enable, CustomThreads
+    } else {
+        GuiControl, Main:Disable, CustomThreads
+    }
+return
+
+; ============================================================
+; CUSTOM THREADS CHANGED
+; ============================================================
+CustomChanged:
+    Gui, Main:Submit, NoHide
+    if (CustomThreads < 1) {
+        GuiControl, Main:, CustomThreads, 1
+    }
+    if (CustomThreads > 200) {
+        GuiControl, Main:, CustomThreads, 200
+    }
+return
+
+; ============================================================
+; STEALTH CHANGED
+; ============================================================
+StealthChanged:
+    ; Just update internal state
+return
+
+; ============================================================
+; REFRESH WORDLISTS
+; ============================================================
+RefreshWordlists:
+    Gosub, LoadWordlists
+return
+
+; ============================================================
+; OPEN OUTPUT FOLDER
+; ============================================================
+OpenOutput:
+    outputDir := A_ScriptDir . "\output"
+    If !FileExist(outputDir) {
+        FileCreateDir, %outputDir%
+    }
+    Run, explorer %outputDir%
+return
+
+; ============================================================
+; START SCAN
+; ============================================================
+StartScan:
+    Gui, Main:Submit, NoHide
+
+    ; Validate domain
+    Dominio := Trim(DomainInput)
+    if (!Dominio || Dominio == "https://example.com") {
+        MsgBox, 48, Validation Error, Please enter a valid target domain.
         return
     }
     
-    if !InStr(Dominio, "http://") && !InStr(Dominio, "https://") {
+    if (!InStr(Dominio, "http://") && !InStr(Dominio, "https://")) {
         Dominio := "https://" . Dominio
     }
 
-    if TotalRutas == 0 {
-        MsgBox, 16, Error, No routes loaded.
+    ; Validate wordlist
+    if (SelectedWordlist = "" || SelectedWordlist = "Loading...") {
+        MsgBox, 48, Validation Error, Please select a wordlist.
         return
     }
 
-    if NavSel = "Chrome" {
-        Navegador := "chrome.exe"
-    } else if NavSel = "Edge" {
-        Navegador := "msedge.exe"
-    } else if NavSel = "Firefox" {
-        Navegador := "firefox.exe"
-    } else if NavSel = "Brave" {
-        Navegador := "brave.exe"
-    } else if NavSel = "Opera" {
-        Navegador := "opera.exe"
-    } else {
-        MsgBox, 16, Error, Select a browser.
-        return
+    ; Validate VPN
+    if (!VPNCheck) {
+        MsgBox, 52, Security Warning, Please confirm you are using a VPN before scanning. Continue?
+        IfMsgBox No
+            return
     }
 
-    MsgBox, 4, FuzzingLocalBot v2.0, 
+    ; Get threads
+    threads := 50
+    if (SpeedSlow) { threads := 10 }
+    else if (SpeedFast) { threads := 100 }
+    else if (SpeedCustom) { threads := CustomThreads }
+
+    ; Confirmation
+    wordlistName := SelectedWordlist
+    StringGetPos, pos, wordlistName, \, R1
+    if (pos >= 0) {
+        StringTrimLeft, wordlistName, wordlistName, pos + 1
+    }
+    
+    MsgBox, 4, FuzzingLocalBot v%AppVersion%,
     (
-    SCAN CONFIGURATION:
+    SCAN CONFIGURATION
     
     Target: %Dominio%
-    Routes: %TotalRutas%
-    Browser: %NavSel%
+    Wordlist: %wordlistName%
+    Threads: %threads%
+    Stealth: %StealthCheck%
     
-    Python backend will do the real fuzzing.
-    The CMD window will show the progress.
-    
-    DO YOU WANT TO CONTINUE?
+    Start scan?
     )
     IfMsgBox No
         return
 
-    EjecutarFuzzing(Navegador, Dominio, RutasCompletas)
+    ; Disable controls
+    GuiControl, Main:Disable, StartBtn
+    GuiControl, Main:Enable, StopBtn
+    GuiControl, Main:Disable, DomainInput
+    GuiControl, Main:Disable, WordlistDropDown
+    
+    RunScan(Dominio, SelectedWordlist, threads)
 return
 
 ; ============================================================
-; RUN FUZZING
+; RUN SCAN
 ; ============================================================
-EjecutarFuzzing(navegador, dominio, rutas) {
-    global TotalRutas, FuzzingActivo, PythonScript, ExtensionesFile
+RunScan(dominio, wordlist, threads) {
+    global FuzzingActivo, PythonScript, ScanPID
     
     FuzzingActivo := true
-    GuiControl, FuzzBot:, TextoEstado, Starting Python backend...
-    GuiControl, FuzzBot:, BarraProgreso, 0
+    GuiControl, Main:, ScanProgress, 0
+    GuiControl, Main:, StatusText, Scanning %dominio%...
     
-    FormatTime, timestamp,, yyyy-MM-dd_HH-mm-ss
-    resultadosFile := A_ScriptDir . "\output\scan_" . timestamp . ".txt"
-    
-    ; Create output folder if not exists
+    ; Create output folder
     FileCreateDir, %A_ScriptDir%\output
     
-    ; Start Python backend in visible CMD window
+    ; Launch Python backend
     if FileExist(PythonScript) {
-        GuiControl, FuzzBot:, TextoEstado, Python backend running. Check the CMD window.
-        Run, cmd /k python "%PythonScript%" "%dominio%" "%ExtensionesFile%" "%resultadosFile%", , , PID
+        Run, python "%PythonScript%" , , Hide, ScanPID
     } else {
-        MsgBox, 16, Error, %PythonScript% not found.
-        FuzzingActivo := false
-        GuiControl, FuzzBot:, TextoEstado, Error: Script not found.
+        MsgBox, 16, Error, Python script not found: %PythonScript%
+        ScanFinished()
         return
     }
     
-    ; Wait for Python process to finish
-    Sleep, 2000
-    GuiControl, FuzzBot:, TextoEstado, Scanning... Wait for the CMD window to finish.
-    
-    loop {
-        Process, Exist, %PID%
-        if (ErrorLevel == 0) {
-            break
-        }
-        Sleep, 1000
+    ; Monitor process
+    SetTimer, CheckScan, 500
+}
+
+; ============================================================
+; CHECK SCAN STATUS
+; ============================================================
+CheckScan:
+    if (!FuzzingActivo) {
+        SetTimer, CheckScan, Off
+        return
     }
     
-    FuzzingActivo := false
-    GuiControl, FuzzBot:, BarraProgreso, 100
-    GuiControl, FuzzBot:, TextoEstado, Scan completed.
+    Process, Exist, %ScanPID%
+    if (ErrorLevel == 0) {
+        SetTimer, CheckScan, Off
+        ScanFinished()
+    }
+return
+
+; ============================================================
+; STOP SCAN
+; ============================================================
+StopScan:
+    if (FuzzingActivo && ScanPID) {
+        Process, Close, %ScanPID%
+        ScanFinished()
+    }
+return
+
+; ============================================================
+; SCAN FINISHED
+; ============================================================
+ScanFinished() {
+    global FuzzingActivo
     
-    ; Search for generated reports
+    FuzzingActivo := false
+    GuiControl, Main:, ScanProgress, 100
+    GuiControl, Main:, StatusText, Scan completed
+    
+    ; Enable controls
+    GuiControl, Main:Enable, StartBtn
+    GuiControl, Main:Disable, StopBtn
+    GuiControl, Main:Enable, DomainInput
+    GuiControl, Main:Enable, WordlistDropDown
+    
+    ; Find report
     reporteHTML := ""
     Loop, Files, %A_ScriptDir%\output\report_*.html
     {
         reporteHTML := A_LoopFileFullPath
+        break
     }
     
-    if reporteHTML != "" {
-        MsgBox, 4, FuzzingLocalBot v2.0,
+    if (reporteHTML != "") {
+        MsgBox, 4, FuzzingLocalBot v%AppVersion%, 
         (
-        SCAN COMPLETED!
+        SCAN COMPLETED
         
-        Results: %resultadosFile%
         Report: %reporteHTML%
         
-        DO YOU WANT TO OPEN THE REPORT?
+        Open report?
         )
         IfMsgBox Yes
         {
             Run, %reporteHTML%
         }
     } else {
-        MsgBox, 64, FuzzingLocalBot v2.0,
+        MsgBox, 64, FuzzingLocalBot v%AppVersion%,
         (
-        SCAN COMPLETED!
+        SCAN COMPLETED
         
-        Results saved to: %resultadosFile%
+        Results saved to output/
         )
     }
     
-    GuiControl, FuzzBot:, TextoEstado, Ready for another scan.
-    GuiControl, FuzzBot:, BarraProgreso, 0
+    GuiControl, Main:, ScanProgress, 0
+    GuiControl, Main:, StatusText, Ready · Waiting for next scan
 }
 
 ; ============================================================
-; KEYBOARD SHORTCUT
+; CLOSE HANDLER
 ; ============================================================
-^!F::
-    Gosub, FuzzBotMenu
-return
-
-; ============================================================
-; CLOSE
-; ============================================================
-FuzzBotGuiClose:
-    if FuzzingActivo {
-        MsgBox, 4, FuzzingLocalBot, A scan is in progress. Do you want to exit?
+MainClose:
+MainEscape:
+    if (FuzzingActivo) {
+        MsgBox, 4, FuzzingLocalBot, Scan in progress. Stop and exit?
         IfMsgBox No
             return
+        Process, Close, %ScanPID%
     }
     ExitApp
 return
 
-Gosub, FuzzBotMenu
+; ============================================================
+; KEYBOARD SHORTCUTS
+; ============================================================
+^Enter::
+    Gosub, StartScan
+return
+
+^S::
+    Gosub, StopScan
+return
+
+^O::
+    Gosub, OpenOutput
+return
+
+; ============================================================
+; INIT
+; ============================================================
+Gosub, BuildGUI
+return
