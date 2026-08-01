@@ -179,6 +179,13 @@ This tool is exclusively for authorized pentesting. Do not use it against system
 
 ---
 
+## Mobile Version
+
+A lightweight version for Android (Termux) is available at:
+[FuzzingLocalBot-Mobile](https://github.com/Enric-xX/FuzzingLocalBot-Mobile)
+
+---
+
 ## License
 
 GNU General Public License v3.0 - See [LICENSE](https://github.com/Enric-xX/FuzzingLocalBot/blob/main/LICENSE)
