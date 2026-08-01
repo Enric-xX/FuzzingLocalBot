@@ -60,7 +60,7 @@ pip install -r requirements.txt
 
 ### With GUI (Windows)
 
-- Run bot.ahk with AutoHotkey
+- Run gui.ahk with AutoHotkey
 
 - Select the browser
 
@@ -148,7 +148,7 @@ FuzzingLocalBot/
 ├── fuzzingbot.py                                                            Main fuzzing engine 
 ├── analyzer.py                                                              HTTP response analyzer
 ├── reporter.py                                                              Report generator
-├── bot.ahk                                                                  Graphical interface 
+├── gui.ahk                                                                  Graphical interface 
 ├── dictionaries/                                                            Curated wordlist collection
 │   ├── top.txt                                                              General directories 
 │   ├── api.txt                                                              API endpoints 
