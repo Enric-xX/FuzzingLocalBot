@@ -24,7 +24,7 @@ Before installing, you need to have installed:
 | Program | Download | Is it required?|
 |----------|----------|---------------|
 | **Python 3.6+** | [python.org/downloads](https://www.python.org/downloads/) | ✅ Yes |
-| **Git** | [git-scm.com/install](https://git-scm.com/install) | ✅ Yes |
+| **Git** | [git-scm.com/install](https://git-scm.com/install) | ⚠️ Only for Console Installation |
 | **AutoHotkey 1.1+** | [autohotkey.com/download](https://www.autohotkey.com/download/) | ⚠️ Only for GUI (Windows) |
 
 ---
@@ -52,6 +52,24 @@ cd FuzzingLocalBot
 ```
 ```
 pip install -r requirements.txt
+```
+
+### Manual version
+
+ Download the latest version from [Releases](https://github.com/Enric-xX/FuzzingLocalBot/releases):
+ 
+
+- `FuzzingLocalBot-vX.X.zip`
+
+- `FuzzingLocalBot-vX.X.tar.gz`
+
+Extract the files and run:
+
+```bash
+pip install -r requirements.txt
+```
+```
+python fuzzingbot.py
 ```
 
 ---
