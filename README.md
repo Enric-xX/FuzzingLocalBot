@@ -1,4 +1,4 @@
-# FuzzingLocalBot v3.0
+# FuzzingLocalBot v3.1
 
 Automation of directory and extension fuzzing, featuring intelligent analysis and professional reporting for authorized penetration testing.
 
