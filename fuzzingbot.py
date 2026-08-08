@@ -163,6 +163,10 @@ def select_wordlist():
         for f in files:
             all_wordlists.append(f"{wordlist_dir}/{f}")
     
+    # Add backend-files.txt if it exists in root
+    if os.path.exists("backend-files.txt"):
+        all_wordlists.append("backend-files.txt")
+    
     if not all_wordlists:
         log("No wordlists found. Using extensiones.txt")
         return "extensiones.txt"
