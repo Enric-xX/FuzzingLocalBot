@@ -1,4 +1,4 @@
-# FuzzingLocalBot v3.1
+# FuzzingLocalBot v3.2
 
 Automation of directory and extension fuzzing, featuring intelligent analysis and professional reporting for authorized penetration testing.
 
@@ -118,7 +118,7 @@ git pull
 
 ## Features
 
-- **15 curated dictionaries**: General, APIs, WordPress, Jira, Path Traversal, IIS, and more
+- **16 curated dictionaries**: General, APIs, WordPress, Jira, Path Traversal, IIS, and more
 - **Interactive wordlist selector**: Browse and choose from available dictionaries
 - **42k lines full scan dictionary** included
 - **Configurable scan speed**: Slow (10 threads, stealth), Normal (50 threads), Fast (100 threads), or Custom
@@ -207,6 +207,7 @@ FuzzingLocalBot/
 │   ├── alt-extensions-php.txt                                               PHP extensions
 │   ├── MimeTypes.txt                                                        MIME types
 │   └── param.txt                                                            Parameter names
+│   └── backendfiles.txt                                                     Backend files                                                          
 └── output/                                                                  Results folder
     ├── scan_*.txt                                                           Raw results
     ├── scan_*.json                                                          JSON results
