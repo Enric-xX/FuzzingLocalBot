@@ -123,7 +123,7 @@ git pull
 - **42k lines full scan dictionary** included
 - **Configurable scan speed**: Slow (10 threads, stealth), Normal (50 threads), Fast (100 threads), or Custom
 - **Stealth mode**: Random delays between requests to evade detection
-- **User-Agent rotation**: 6 different User-Agents to avoid fingerprinting
+- **User-Agent rotation**: 14 different User-Agents to avoid fingerprinting
 - **Response analyzer**: Detects technologies and classifies findings by severity
 - **Professional reports**: Generates Markdown and HTML reports
 - **Technologies fingerprinting**: WordPress, Apache, Nginx, PHP, Laravel, Django, and more
