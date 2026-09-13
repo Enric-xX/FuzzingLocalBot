@@ -118,15 +118,9 @@ git pull
 
 ## Features
 
-- **16 curated dictionaries**: General, APIs, WordPress, Jira, Path Traversal, IIS, and more
-- **Interactive wordlist selector**: Browse and choose from available dictionaries
-- **42k lines full scan dictionary** included
-- **Configurable scan speed**: Slow (10 threads, stealth), Normal (50 threads), Fast (100 threads), or Custom
-- **Stealth mode**: Random delays between requests to evade detection
-- **User-Agent rotation**: 14 different User-Agents to avoid fingerprinting
-- **Response analyzer**: Detects technologies and classifies findings by severity
-- **Professional reports**: Generates Markdown and HTML reports
-- **Technologies fingerprinting**: WordPress, Apache, Nginx, PHP, Laravel, Django, and more
+FuzzingLocalBot includes 200+ technology signatures, 60+ risk patterns, 25+ WAF signatures, and 40+ User-Agents.
+
+See [FEATURES.md](FEATURES.md) for the complete feature list.
 
 ---
 
@@ -141,9 +135,11 @@ git pull
 
 ---
 
-## User-Agent Pool 
+## User-Agent Pool
 
-See the full table on the [UserAgentsPool.md](https://github.com/Enric-xX/FuzzingLocalBot/blob/main/UserAgentsPool.md)
+FuzzingLocalBot rotates between 40+ real User-Agents to evade fingerprinting and WAF detection.
+
+See [UserAgentsPool.md](https://github.com/Enric-xX/FuzzingLocalBot/blob/main/UserAgentsPool.md)
 
 ---
 
