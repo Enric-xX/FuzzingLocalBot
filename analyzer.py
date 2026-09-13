@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-FuzzingLocalBot - Analyzer Module v3.0
+FuzzingLocalBot - Analyzer Module v3.4
 Analyzes HTTP responses and classifies findings by severity with CWE mapping.
 """
 
@@ -12,7 +12,12 @@ from urllib.parse import urlparse
 
 
 # ============================================================
-# SIGNATURES - 150+ technologies, 50+ risk patterns, 20+ WAFs
+# VERSION
+# ============================================================
+VERSION = "3.4"
+
+# ============================================================
+# SIGNATURES - 200+ technologies, 60+ risk patterns, 25+ WAFs
 # ============================================================
 
 TECH_SIGNATURES = {
@@ -35,6 +40,16 @@ TECH_SIGNATURES = {
     "Squarespace": ["squarespace", "Squarespace"],
     "Wix": ["wix", "Wix"],
     "Webflow": ["webflow", "Webflow"],
+    "Bitrix": ["bitrix", "Bitrix"],
+    "OpenCart": ["opencart", "OpenCart"],
+    "osCommerce": ["oscommerce", "osCommerce"],
+    "Zen Cart": ["zen-cart", "Zen Cart"],
+    "MediaWiki": ["mediawiki", "MediaWiki"],
+    "DokuWiki": ["dokuwiki", "DokuWiki"],
+    "phpBB": ["phpbb", "phpBB"],
+    "vBulletin": ["vbulletin", "vBulletin"],
+    "XenForo": ["xenforo", "XenForo"],
+    "Discourse": ["discourse", "Discourse"],
     
     # === Frameworks ===
     "Laravel": ["laravel", "XSRF-TOKEN", "laravel_session"],
@@ -48,7 +63,7 @@ TECH_SIGNATURES = {
     "Nuxt.js": ["nuxt", "__nuxt", "_nuxt/"],
     "Gatsby": ["gatsby", "___gatsby"],
     "Angular": ["angular", "ng-version", "app-root"],
-    "React": ["react", "reactjs", "react-root"],
+    "React": ["react", "reactjs", "react-root", "_react"],
     "Vue.js": ["vue", "vuejs", "data-v-"],
     "Svelte": ["svelte", "sveltekit"],
     "FastAPI": ["fastapi", "FastAPI"],
@@ -56,6 +71,18 @@ TECH_SIGNATURES = {
     "Symfony": ["symfony", "Symfony"],
     "CakePHP": ["cakephp", "CakePHP"],
     "CodeIgniter": ["codeigniter", "CodeIgniter"],
+    "Yii": ["yii", "Yii"],
+    "Zend": ["zend", "Zend"],
+    "FuelPHP": ["fuelphp", "FuelPHP"],
+    "Slim": ["slim", "Slim Framework"],
+    "NestJS": ["nestjs", "NestJS"],
+    "Koa": ["koa", "Koa"],
+    "Hapi": ["hapi", "Hapi"],
+    "AdonisJS": ["adonis", "AdonisJS"],
+    "Strapi": ["strapi", "Strapi"],
+    "Directus": ["directus", "Directus"],
+    "KeystoneJS": ["keystone", "KeystoneJS"],
+    "Payload CMS": ["payload", "Payload CMS"],
     
     # === Languages ===
     "PHP": ["X-Powered-By: PHP", "PHPSESSID", ".php"],
@@ -67,6 +94,13 @@ TECH_SIGNATURES = {
     "C#": ["ASP.NET", "X-AspNet-Version"],
     "Perl": ["perl", "Perl"],
     "Rust": ["rust", "Rust"],
+    "Scala": ["scala", "Scala"],
+    "Kotlin": ["kotlin", "Kotlin"],
+    "Swift": ["swift", "Swift"],
+    "Elixir": ["elixir", "Elixir"],
+    "Erlang": ["erlang", "Erlang"],
+    "Haskell": ["haskell", "Haskell"],
+    "Clojure": ["clojure", "Clojure"],
     
     # === Servers ===
     "Apache": ["Apache", "Server: Apache"],
@@ -80,6 +114,17 @@ TECH_SIGNATURES = {
     "Undertow": ["undertow", "Undertow"],
     "Gunicorn": ["gunicorn", "Gunicorn"],
     "uWSGI": ["uwsgi", "uWSGI"],
+    "Puma": ["puma", "Puma"],
+    "Unicorn": ["unicorn", "Unicorn"],
+    "Passenger": ["passenger", "Phusion Passenger"],
+    "Cherokee": ["cherokee", "Cherokee"],
+    "Lighttpd": ["lighttpd", "lighttpd"],
+    "H2O": ["h2o", "H2O"],
+    "Traefik": ["traefik", "Traefik"],
+    "HAProxy": ["haproxy", "HAProxy"],
+    "Envoy": ["envoy", "Envoy"],
+    "Istio": ["istio", "Istio"],
+    "Nginx Unit": ["unit", "NGINX Unit"],
     
     # === Cloud / CDN ===
     "Cloudflare": ["cloudflare", "__cfduid", "cf-ray", "cf-cache-status"],
@@ -95,6 +140,15 @@ TECH_SIGNATURES = {
     "BunnyCDN": ["bunnycdn", "BunnyCDN"],
     "KeyCDN": ["keycdn", "KeyCDN"],
     "StackPath": ["stackpath", "StackPath"],
+    "CloudFront": ["cloudfront", "x-amz-cf-id"],
+    "Sucuri": ["sucuri", "cloudproxy"],
+    "Incapsula": ["incapsula", "visid_incap_"],
+    "Imperva": ["imperva", "X-Iinfo"],
+    "Section.io": ["section.io", "Section"],
+    "Fly.io": ["fly.io", "Fly"],
+    "Render": ["render.com", "Render"],
+    "Railway": ["railway", "Railway"],
+    "Koyeb": ["koyeb", "Koyeb"],
     
     # === DevOps / Tools ===
     "Jenkins": ["jenkins", "Dashboard", "Jenkins-Crumb"],
@@ -118,10 +172,73 @@ TECH_SIGNATURES = {
     "NATS": ["nats", "NATS"],
     "Vault": ["vault", "Vault"],
     "Consul": ["consul", "Consul"],
-    "Traefik": ["traefik", "Traefik"],
-    "HAProxy": ["haproxy", "HAProxy"],
-    "Envoy": ["envoy", "Envoy"],
-    "Istio": ["istio", "Istio"],
+    "Nomad": ["nomad", "Nomad"],
+    "Terraform": ["terraform", "Terraform"],
+    "Ansible": ["ansible", "Ansible"],
+    "Puppet": ["puppet", "Puppet"],
+    "Chef": ["chef", "Chef"],
+    "SaltStack": ["saltstack", "SaltStack"],
+    "ArgoCD": ["argocd", "ArgoCD"],
+    "FluxCD": ["fluxcd", "FluxCD"],
+    "Spinnaker": ["spinnaker", "Spinnaker"],
+    "Tekton": ["tekton", "Tekton"],
+    "Drone": ["drone", "DroneCI"],
+    "CircleCI": ["circleci", "CircleCI"],
+    "Travis CI": ["travis", "Travis CI"],
+    "TeamCity": ["teamcity", "TeamCity"],
+    "Bamboo": ["bamboo", "Bamboo"],
+    "Octopus Deploy": ["octopus", "Octopus Deploy"],
+    
+    # === JavaScript Libraries ===
+    "jQuery": ["jquery", "jQuery"],
+    "Bootstrap": ["bootstrap", "Bootstrap"],
+    "Tailwind CSS": ["tailwind", "Tailwind"],
+    "Font Awesome": ["font-awesome", "FontAwesome"],
+    "Lodash": ["lodash", "Lodash"],
+    "Moment.js": ["moment", "Moment.js"],
+    "Day.js": ["dayjs", "Day.js"],
+    "Axios": ["axios", "Axios"],
+    "D3.js": ["d3.js", "d3js"],
+    "Three.js": ["three.js", "Three.js"],
+    "Chart.js": ["chart.js", "Chart.js"],
+    "Alpine.js": ["alpine", "Alpine.js"],
+    "HTMX": ["htmx", "HTMX"],
+    "Stimulus": ["stimulus", "Stimulus"],
+    "Turbo": ["turbo", "Turbo"],
+    
+    # === Analytics / Marketing ===
+    "Google Analytics": ["google-analytics", "gtag", "ga("],
+    "Google Tag Manager": ["googletagmanager", "GTM-"],
+    "Facebook Pixel": ["facebook.net", "fbq("],
+    "Hotjar": ["hotjar", "Hotjar"],
+    "Mixpanel": ["mixpanel", "Mixpanel"],
+    "Segment": ["segment", "Segment"],
+    "Amplitude": ["amplitude", "Amplitude"],
+    "Matomo": ["matomo", "Matomo"],
+    "Plausible": ["plausible", "Plausible"],
+    "Fathom": ["fathom", "Fathom"],
+    
+    # === Payment / E-commerce ===
+    "Stripe": ["stripe", "Stripe"],
+    "PayPal": ["paypal", "PayPal"],
+    "Square": ["square", "Square"],
+    "Braintree": ["braintree", "Braintree"],
+    "Adyen": ["adyen", "Adyen"],
+    "Mollie": ["mollie", "Mollie"],
+    "Klarna": ["klarna", "Klarna"],
+    "Shopify Payments": ["shopify", "Shopify Payments"],
+    
+    # === Security ===
+    "reCAPTCHA": ["recaptcha", "g-recaptcha"],
+    "hCaptcha": ["hcaptcha", "h-captcha"],
+    "Cloudflare Turnstile": ["turnstile", "cf-turnstile"],
+    "Auth0": ["auth0", "Auth0"],
+    "Okta": ["okta", "Okta"],
+    "Keycloak": ["keycloak", "Keycloak"],
+    "Firebase Auth": ["firebase", "Firebase Auth"],
+    "Supabase": ["supabase", "Supabase"],
+    "Clerk": ["clerk", "Clerk"],
+    "NextAuth": ["next-auth", "NextAuth"],
 }
 
 RISK_PATTERNS = {
@@ -154,6 +271,11 @@ RISK_PATTERNS = {
     "env_file": {
         "patterns": ["DB_PASSWORD=", "DB_USERNAME=", "SECRET_KEY=", "API_KEY=", "APP_KEY=", "MAIL_PASSWORD="],
         "cwe": "CWE-200",
+        "score": 50,
+    },
+    "private_key": {
+        "patterns": ["BEGIN RSA PRIVATE KEY", "BEGIN DSA PRIVATE KEY", "BEGIN EC PRIVATE KEY", "BEGIN OPENSSH PRIVATE KEY"],
+        "cwe": "CWE-798",
         "score": 50,
     },
     
@@ -202,6 +324,11 @@ RISK_PATTERNS = {
         "patterns": ["DEBUG=True", "django_debug", "settings.py", "wsgi.py", "DJANGO_SETTINGS_MODULE"],
         "cwe": "CWE-489",
         "score": 30,
+    },
+    "cors_misconfig": {
+        "patterns": ["Access-Control-Allow-Origin: *", "Access-Control-Allow-Credentials: true"],
+        "cwe": "CWE-942",
+        "score": 35,
     },
     
     # === Medium ===
@@ -265,22 +392,17 @@ RISK_PATTERNS = {
         "cwe": "CWE-200",
         "score": 10,
     },
+    "graphql": {
+        "patterns": ["graphql", "GraphQL", "graphiql"],
+        "cwe": "CWE-200",
+        "score": 10,
+    },
     
     # === Low ===
     "login_form": {
         "patterns": ["password", "login", "username", "<form", "signin", "sign_in", "log in", "email"],
         "cwe": "N/A",
         "score": 5,
-    },
-    "graphql": {
-        "patterns": ["graphql", "GraphQL", "graphiql"],
-        "cwe": "CWE-200",
-        "score": 10,
-    },
-    "cors_misconfig": {
-        "patterns": ["Access-Control-Allow-Origin: *"],
-        "cwe": "CWE-942",
-        "score": 10,
     },
 }
 
@@ -307,6 +429,22 @@ WAF_SIGNATURES = {
     "Distil": ["distil", "Distil", "x-distil-cs"],
     "Reblaze": ["reblaze", "Reblaze"],
     "Bitninja": ["bitninja", "BitNinja"],
+    "StackPath": ["stackpath", "StackPath"],
+    "Fastly": ["fastly", "x-served-by"],
+    "Section.io": ["section.io", "Section"],
+    "Fly.io": ["fly.io", "Fly"],
+}
+
+SECURITY_HEADERS = {
+    "Strict-Transport-Security": "HSTS",
+    "Content-Security-Policy": "CSP",
+    "X-Frame-Options": "Clickjacking protection",
+    "X-Content-Type-Options": "MIME sniffing protection",
+    "Referrer-Policy": "Referrer policy",
+    "Permissions-Policy": "Permissions policy",
+    "Cross-Origin-Opener-Policy": "COOP",
+    "Cross-Origin-Resource-Policy": "CORP",
+    "Cross-Origin-Embedder-Policy": "COEP",
 }
 
 STATUS_CLASSIFICATION = {
@@ -342,6 +480,7 @@ class Analyzer:
         }
         self.technologies = set()
         self.wafs = set()
+        self.missing_headers = set()
         self.baseline_length = None
         self.total_urls_analyzed = 0
         self.seen_hashes = set()
@@ -390,19 +529,12 @@ class Analyzer:
                     break
 
         # 5. Check security headers
-        security_headers = {
-            "Strict-Transport-Security": ("HSTS enabled", 0),
-            "Content-Security-Policy": ("CSP enabled", 0),
-            "X-Frame-Options": ("Clickjacking protection", 0),
-            "X-Content-Type-Options": ("MIME sniffing protection", 0),
-            "Referrer-Policy": ("Referrer policy set", 0),
-            "Permissions-Policy": ("Permissions policy set", 0),
-        }
-        for header, (description, _) in security_headers.items():
+        for header, description in SECURITY_HEADERS.items():
             if header in headers:
-                findings.append(f"Security: {description}")
+                findings.append(f"Security: {description} enabled")
             else:
-                findings.append(f"Missing: {header}")
+                self.missing_headers.add(header)
+                findings.append(f"Missing: {header} ({description})")
                 risk_score += 3
 
         # 6. Check cookies
@@ -419,6 +551,7 @@ class Analyzer:
                 risk_score += 5
             if "PHPSESSID" in cookies or "JSESSIONID" in cookies:
                 findings.append("Cookie: Session ID exposed")
+                risk_score += 5
 
         # 7. Detect risks
         if status == 200:
@@ -536,6 +669,7 @@ class Analyzer:
             "info": len(self.findings["info"]),
             "technologies": sorted(list(self.technologies)),
             "wafs": sorted(list(self.wafs)),
+            "missing_headers": sorted(list(self.missing_headers)),
             "total_analyzed": self.total_urls_analyzed,
         }
 
@@ -544,5 +678,5 @@ class Analyzer:
 
 
 if __name__ == "__main__":
-    print("[*] Analyzer module v3.0 loaded successfully.")
+    print(f"[*] Analyzer module v3.4 loaded successfully.")
     print("[*] Use: from analyzer import Analyzer")
