@@ -128,10 +128,10 @@ See [FEATURES.md](FEATURES.md) for the complete feature list.
 
 | Mode | Threads | User-Agent | Delay | Use Case |
 |------|---------|------------|-------|----------|
-| Slow | 10 | Rotating (14) | 1-3s | Stealth, evading WAF/IDS |
-| Normal | 50 | Rotating (14) | 0.5-1s | Balanced pentesting |
-| Fast | 100 | Rotating (14) | None | CTFs, authorized speed tests |
-| Custom | Any | Rotating (14) | Configurable | Full control |
+| Slow | 10 | Rotating (40) | 1-3s | Stealth, evading WAF/IDS |
+| Normal | 50 | Rotating (40) | 0.5-1s | Balanced pentesting |
+| Fast | 100 | Rotating (40) | None | CTFs, authorized speed tests |
+| Custom | Any | Rotating (40) | Configurable | Full control |
 
 ---
 
