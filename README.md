@@ -120,7 +120,7 @@ git pull
 
 FuzzingLocalBot includes 200+ technology signatures, 60+ risk patterns, 25+ WAF signatures, and 40+ User-Agents.
 
-See [FEATURES.md](FEATURES.md) for the complete feature list.
+See [FEATURES](FEATURES.md) for the complete feature list.
 
 ---
 
@@ -139,7 +139,7 @@ See [FEATURES.md](FEATURES.md) for the complete feature list.
 
 FuzzingLocalBot rotates between 40+ real User-Agents to evade fingerprinting and WAF detection.
 
-See [UserAgentsPool.md](https://github.com/Enric-xX/FuzzingLocalBot/blob/main/UserAgentsPool.md)
+See [UserAgentsPool](https://github.com/Enric-xX/FuzzingLocalBot/blob/main/UserAgentsPool.md)
 
 ---
 
@@ -157,7 +157,7 @@ See [UserAgentsPool.md](https://github.com/Enric-xX/FuzzingLocalBot/blob/main/Us
 
 ## Project Structure
 
-See [DirectoryStructure.md](DirectoryStructure.md) for the complete project structure.
+See [DirectoryStructure](DirectoryStructure.md) for the complete project structure.
 
 ---
 
