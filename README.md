@@ -141,28 +141,9 @@ git pull
 
 ---
 
-## User-Agent Pool (14 agents)
+## User-Agent Pool 
 
-| # | Browser | OS |
-|---|---------|----|
-| 1 | Chrome 120 | Windows 10 |
-| 2 | Chrome 119 | Windows 10 |
-| 3 | Chrome 120 | macOS 10.15 |
-| 4 | Chrome 119 | macOS 14 |
-| 5 | Firefox 120 | Windows 10 |
-| 6 | Firefox 119 | Windows 10 |
-| 7 | Firefox 120 | macOS 10.15 |
-| 8 | Safari 17 | macOS 10.15 |
-| 9 | Safari 17 | iOS 17 (iPhone) |
-| 10 | Chrome 120 | Android 13 (Samsung) |
-| 11 | Chrome 119 | Android 13 (Pixel) |
-| 12 | Edge 120 | Windows 10 |
-| 13 | Opera 106 | Windows 10 |
-| 14 | Chrome 120 | Linux x86_64 |
-
-All User-Agents rotate randomly on each request. Combined with realistic headers 
-(Accept, Accept-Language, Sec-Fetch-*), FuzzingLocalBot mimics real browser behavior 
-to evade basic fingerprinting and WAF detection.
+See the full table on the [UserAgentsPool.md](https://github.com/Enric-xX/FuzzingLocalBot/blob/main/UserAgentsPool.md)
 
 ---
 
