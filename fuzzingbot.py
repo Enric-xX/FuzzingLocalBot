@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""
+FuzzingLocalBot - Main Fuzzing Engine v3.4
+Advanced web fuzzing tool with intelligent analysis and professional reporting.
+"""
+
 import os
 import sys
 import time
@@ -24,6 +29,7 @@ except ImportError:
 # ============================================================
 # CONFIGURATION
 # ============================================================
+VERSION = "3.4"
 TIMEOUT = 3
 MAX_RETRIES = 2
 FOUND = 0
@@ -35,35 +41,74 @@ LAST_UPDATE = time.time()
 SCAN_RESULTS = []
 CURRENT_RESULTS_FILE = ""
 
-# User-Agents for rotation (14 diverse agents)
+# ============================================================
+# USER-AGENTS - 40 diverse agents (2026)
+# ============================================================
 USER_AGENTS = [
-    # Chrome Windows
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
-    # Chrome macOS
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
-    # Firefox Windows
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:119.0) Gecko/20100101 Firefox/119.0",
-    # Firefox macOS
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:120.0) Gecko/20100101 Firefox/120.0",
-    # Safari macOS
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
-    # Safari iOS
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
-    # Chrome Android
-    "Mozilla/5.0 (Linux; Android 13; SM-S908B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 13; Pixel 7 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36",
-    # Edge Windows
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
-    # Opera Windows
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 OPR/106.0.0.0",
-    # Linux Chrome
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    # === Chrome Windows ===
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+    # === Chrome macOS ===
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+    # === Chrome Linux ===
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+    # === Firefox Windows ===
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:131.0) Gecko/20100101 Firefox/131.0",
+    # === Firefox macOS ===
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:133.0) Gecko/20100101 Firefox/133.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14.5; rv:132.0) Gecko/20100101 Firefox/132.0",
+    # === Firefox Linux ===
+    "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:132.0) Gecko/20100101 Firefox/132.0",
+    # === Safari macOS ===
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15",
+    # === Safari iOS ===
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (iPad; CPU OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1",
+    # === Chrome Android ===
+    "Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36",
+    "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
+    "Mozilla/5.0 (Linux; Android 13; SM-A536B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Mobile Safari/537.36",
+    "Mozilla/5.0 (Linux; Android 14; OnePlus 11) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36",
+    # === Edge Windows ===
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36 Edg/129.0.0.0",
+    # === Opera ===
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 OPR/115.0.0.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 OPR/114.0.0.0",
+    # === Brave ===
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Brave/131",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Brave/130",
+    # === Vivaldi ===
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Vivaldi/7.0",
+    # === Samsung Internet ===
+    "Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/27.0 Chrome/125.0.0.0 Mobile Safari/537.36",
+    # === Consolas ===
+    "Mozilla/5.0 (PlayStation; PlayStation 5/2.26) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15",
+    "Mozilla/5.0 (Xbox; Xbox Series X) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    # === Bots ===
+    "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+    "Mozilla/5.0 (compatible; Bingbot/2.0; +http://www.bing.com/bingbot.htm)",
+    # === Legacy ===
+    "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:109.0) Gecko/20100101 Firefox/109.0",
 ]
 
-# Stealth delays
+# ============================================================
+# STEALTH DELAYS
+# ============================================================
 STEALTH_DELAYS = {
     "slow": (1, 3),
     "normal": (0.5, 1),
@@ -91,7 +136,7 @@ def show_progress():
         log(f"Progress: {FOUND}/{TOTAL} found | Speed: {speed:.1f}/s | ETA: {eta:.0f}s")
 
 def show_banner():
-    print("""
+    print(f"""
 ╔═════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                                         ║
 ║   ███████╗██╗   ██╗███████╗███████╗██╗      ██████╗  ██████╗ █████╗ ██╗     ██████╗  ██████╗ ████████╗  ║
@@ -101,6 +146,7 @@ def show_banner():
 ║   ██║     ╚██████╔╝███████╗███████╗███████╗╚██████╔╝╚██████╗██║  ██║███████╗██████╔╝╚██████╔╝   ██║     ║
 ║  ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝╚═════╝  ╚═════╝    ╚═╝      ║
 ║                                                                                                         ║
+║                              FuzzingLocalBot v3.4 - Advanced Web Fuzzer                             ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════╣
 ║  RECOMMENDATION: USE A VPN BEFORE RUNNING THIS                                                         ║
 ║  Only for authorized pentesting                                                                        ║
@@ -110,15 +156,15 @@ def show_banner():
 def configure_scan():
     """Ask user for scan speed, stealth mode, and return thread count."""
     global STEALTH_MODE, STEALTH_SPEED
-    
+
     print("\n[*] Select scan speed:")
     print("    1. Slow (10 threads, stealth)")
     print("    2. Normal (50 threads, stealth)")
     print("    3. Fast (100 threads)")
     print("    4. Custom")
-    
+
     choice = input("\n[*] Choose (1-4, Enter=2): ").strip() or "2"
-    
+
     if choice == "1":
         threads = 10
         STEALTH_MODE = True
@@ -143,52 +189,51 @@ def configure_scan():
             STEALTH_SPEED = speed if speed in STEALTH_DELAYS else "normal"
     else:
         threads = 50
-    
+
     if STEALTH_MODE:
         log(f"Stealth mode enabled ({STEALTH_SPEED})")
-    
+
     return threads
 
 def select_wordlist():
     """Show available wordlists and let user pick one by number."""
     wordlist_dir = "dictionaries" if os.path.exists("dictionaries") else "wordlists"
-    
+
     all_wordlists = []
-    
+
     if os.path.exists("extensiones.txt"):
         all_wordlists.append("extensiones.txt")
-    
+
     if os.path.exists(wordlist_dir):
         files = sorted([f for f in os.listdir(wordlist_dir) if f.endswith(".txt")])
         for f in files:
             all_wordlists.append(f"{wordlist_dir}/{f}")
-    
-    # Add backend-files.txt if it exists in root
+
     if os.path.exists("backend-files.txt"):
         all_wordlists.append("backend-files.txt")
-    
+
     if not all_wordlists:
         log("No wordlists found. Using extensiones.txt")
         return "extensiones.txt"
-    
+
     print(f"\n[*] Available wordlists:\n")
     for i, wl in enumerate(all_wordlists, 1):
         display = wl.replace("dictionaries/", "").replace("wordlists/", "")
         print(f"    {i}. {display}")
-    
+
     print(f"\n[*] Choose a number (Enter=1):")
     choice = input("> ").strip()
-    
+
     if choice == "":
         return all_wordlists[0]
-    
+
     try:
         index = int(choice) - 1
         if 0 <= index < len(all_wordlists):
             return all_wordlists[index]
     except:
         pass
-    
+
     log(f"Invalid choice. Using {all_wordlists[0]}")
     return all_wordlists[0]
 
@@ -198,19 +243,19 @@ def select_wordlist():
 def load_wordlist(filepath):
     """Load wordlist treating all lines as complete routes."""
     standalone = []
-    
+
     if not os.path.exists(filepath):
         log(f"ERROR: File {filepath} not found.")
         return []
-    
+
     log(f"Loading {filepath}...")
-    
+
     with open(filepath, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if line and not line.startswith("#"):
                 standalone.append(line)
-    
+
     log(f"Loaded: {len(standalone)} routes")
     return standalone
 
@@ -231,11 +276,11 @@ def test_url(url, timeout=TIMEOUT):
         "Sec-Fetch-User": "?1",
         "Cache-Control": "max-age=0",
     }
-    
+
     if STEALTH_MODE:
         delay_min, delay_max = STEALTH_DELAYS.get(STEALTH_SPEED, (0.5, 1))
         time.sleep(random.uniform(delay_min, delay_max))
-    
+
     for attempt in range(MAX_RETRIES + 1):
         try:
             response = requests.get(
@@ -287,41 +332,42 @@ def show_periodic_progress(total, found, start_time):
 def save_interrupt_report():
     """Generate report with current results when Ctrl+C is pressed."""
     global SCAN_RESULTS, CURRENT_RESULTS_FILE
-    
+
     if not SCAN_RESULTS:
         log("\nNo results to save.")
         return
-    
+
     log("\nGenerating report with current results...")
-    
+
     try:
         from analyzer import Analyzer
         from reporter import Reporter
-        
+
         analyzer = Analyzer()
-        
+
         lengths = [r.get("content_length", 0) for r in SCAN_RESULTS if r.get("status") == 200]
         if lengths:
             baseline = max(set(lengths), key=lengths.count)
             analyzer.set_baseline(baseline)
-        
+
         for r in SCAN_RESULTS:
             if r.get("exists", False) or r.get("status") in [401, 403, 500]:
                 analyzer.analyze(r)
-        
+
         domain = "unknown"
         if SCAN_RESULTS:
             first_url = SCAN_RESULTS[0].get("url", "")
             if "://" in first_url:
                 domain = first_url.split("://")[1].split("/")[0]
-        
+
         reporter = Reporter(domain, analyzer)
         elapsed = time.time() - START_TIME
         found_count = sum(1 for r in SCAN_RESULTS if r.get("exists", False))
-        
+
         md_file = reporter.save_markdown(found_count, elapsed, output_dir="output")
         html_file = reporter.save_html(found_count, elapsed, output_dir="output")
-        
+        json_file = reporter.save_json(found_count, elapsed, output_dir="output")
+
         summary = analyzer.get_summary()
         log(f"   Critical: {summary['critical']}")
         log(f"   High: {summary['high']}")
@@ -330,8 +376,9 @@ def save_interrupt_report():
         log(f"   Info: {summary['info']}")
         log(f"   MD Report: {md_file}")
         log(f"   HTML Report: {html_file}")
+        log(f"   JSON Report: {json_file}")
         log("Report saved successfully!")
-        
+
     except Exception as e:
         log(f"Could not generate report: {e}")
 
@@ -350,65 +397,65 @@ def signal_handler(sig, frame):
 # ============================================================
 def main():
     global FOUND, TOTAL, START_TIME, THREADS, SCAN_RESULTS, CURRENT_RESULTS_FILE
-    
+
     signal.signal(signal.SIGINT, signal_handler)
-    
+
     show_banner()
-    
+
     domain = input("[*] Target domain (e.g. https://example.com): ").strip()
     if not domain:
         log("ERROR: No domain provided.")
         sys.exit(1)
     if not domain.startswith("http"):
         domain = "https://" + domain
-    
+
     wordlist_file = select_wordlist()
     CURRENT_RESULTS_FILE = f"output/scan_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-    
+
     log(f"Starting scan for {domain}")
-    
+
     THREADS = configure_scan()
     log(f"Using {THREADS} threads")
-    
+
     routes = load_wordlist(wordlist_file)
     if not routes:
         log("ERROR: Could not load wordlist.")
         sys.exit(1)
-    
+
     TOTAL = len(routes)
     log(f"Total routes to test: {TOTAL}")
-    
+
     START_TIME = time.time()
     SCAN_RESULTS = []
     FOUND = 0
     progress_thread = threading.Thread(target=show_periodic_progress, args=(TOTAL, FOUND, START_TIME), daemon=True)
     progress_thread.start()
-    
+
     log(f"Testing with {THREADS} threads...")
-    
+
     with ThreadPoolExecutor(max_workers=THREADS) as executor:
         futures = {executor.submit(test_url, urljoin(domain, route)): route for route in routes}
-        
+
         for i, future in enumerate(as_completed(futures), 1):
             result = future.result()
             SCAN_RESULTS.append(result)
-            
+
             if result.get("exists", False):
                 FOUND += 1
                 with open(CURRENT_RESULTS_FILE, "a", encoding="utf-8") as f:
                     f.write(f"[{result['status']}] {result['url']}\n")
                 log(f"FOUND: {result['status']} {result['url']}")
-            
+
             if i % 100 == 0:
                 show_progress()
-    
+
     json_file = CURRENT_RESULTS_FILE.replace(".txt", ".json")
     with open(json_file, "w", encoding="utf-8") as f:
         json.dump(SCAN_RESULTS, f, ensure_ascii=False, indent=2)
-    
+
     elapsed = time.time() - START_TIME
     log("=" * 50)
-    log(f"COMPLETED")
+    log(f"COMPLETED - FuzzingLocalBot v{VERSION}")
     log(f"   Total routes: {TOTAL}")
     log(f"   Found: {FOUND}")
     log(f"   Time: {elapsed:.1f}s")
@@ -416,7 +463,7 @@ def main():
     log(f"   Results: {CURRENT_RESULTS_FILE}")
     log(f"   JSON: {json_file}")
     log("=" * 50)
-    
+
     save_interrupt_report()
 
 if __name__ == "__main__":
